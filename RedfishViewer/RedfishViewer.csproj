@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>RedfishViewer.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <Title>$(AssemblyName)</Title>
+    <Description>Redfish Viewer</Description>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <BaseOutputPath></BaseOutputPath>
+    <Authors>Tabito</Authors>
+    <Copyright>Copyright(c) 2023 Tabito.</Copyright>
+    <PackageProjectUrl>https://github.com/sabakunotabito/RedfishViewer</PackageProjectUrl>
+    <PackageIcon>RedfishViewer.ico</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>Redfish;Viewer</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="RedfishViewer.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="DiffPlex.Wpf" Version="1.4.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NLog" Version="5.2.7" />
+    <PackageReference Include="Notification.Wpf" Version="7.0.0.2" />
+    <PackageReference Include="Prism.Unity" Version="8.1.97" />
+    <PackageReference Include="ReactiveProperty" Version="9.3.4" />
+    <PackageReference Include="ReactiveProperty.WPF" Version="9.3.4" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="RedfishViewer.ico">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

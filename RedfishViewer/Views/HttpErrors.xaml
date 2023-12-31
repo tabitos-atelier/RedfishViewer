@@ -1,0 +1,311 @@
+﻿<UserControl
+    x:Class="RedfishViewer.Views.HttpErrors"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:rp="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    prism:ViewModelLocator.AutoWireViewModel="True"
+    Background="{DynamicResource MaterialDesignPaper}"
+    FontFamily="{materialDesign:MaterialDesignFont}"
+    TextElement.FontSize="14"
+    TextElement.FontWeight="Medium"
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <rp:EventToReactiveCommand Command="{Binding LoadedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <!--  エラー情報リスト  -->
+        <DataGrid
+            AllowDrop="False"
+            AutoGenerateColumns="False"
+            CanUserAddRows="false"
+            Foreground="Crimson"
+            FrozenColumnCount="1"
+            HorizontalScrollBarVisibility="Auto"
+            IsReadOnly="True"
+            ItemsSource="{Binding HttpErrors, Mode=OneWay}"
+            SelectedIndex="{Binding HttpErrorIndex.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedItem="{Binding HttpErrorItem.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionMode="Single"
+            Style="{StaticResource MaterialDesignDataGrid}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="LoadingRow">
+                    <rp:EventToReactiveCommand Command="{Binding LoadingRowCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn CanUserResize="False" Header="No.">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--  発生日時  -->
+                <DataGridTextColumn
+                    Binding="{Binding Created.Value, StringFormat=\{0:s\}}"
+                    CanUserResize="False"
+                    Header="発生日時" />
+                <!--  Proxy 有効・無効  -->
+                <DataGridTemplateColumn
+                    CanUserResize="False"
+                    Header="Proxy"
+                    IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="Crimson"
+                                IsChecked="{Binding ProxyEnabled.Value, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                IsHitTestVisible="False"
+                                IsTabStop="False"
+                                Style="{StaticResource MaterialDesignCheckBox}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--  HTTPステータスコード  -->
+                <DataGridTextColumn
+                    Binding="{Binding StatusCode.Value}"
+                    CanUserResize="False"
+                    Header="Stts">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <!--  エラーメッセージ  -->
+                <DataGridTextColumn
+                    Binding="{Binding Message.Value}"
+                    CanUserResize="False"
+                    Header="エラーメッセージ" />
+                <!--  HTTPメソッド  -->
+                <DataGridTextColumn
+                    Binding="{Binding Method.Value}"
+                    CanUserResize="False"
+                    Header="MH" />
+                <!--  URI  -->
+                <DataGridTextColumn
+                    Binding="{Binding Uri.Value}"
+                    CanUserResize="False"
+                    Header="Uri" />
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu Style="{StaticResource MaterialDesignContextMenu}">
+                    <MenuItem Command="ApplicationCommands.Copy" Header="コピー">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentCopy" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Command="{Binding ReRequestCommand}"
+                        Header="リクエスト反映"
+                        ToolTip="前回のHTTPリクエスト条件を反映します">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="History" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem
+                        Command="{Binding ClearErrorsCommand}"
+                        Header="エラーをクリア"
+                        ToolTip="HTTPリクエストエラーをクリアします">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Eraser" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+        <!--  セパレータ  -->
+        <GridSplitter
+            Grid.Column="1"
+            Width="5"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch" />
+        <!--  Rest API の JSON コンテンツ  -->
+        <ScrollViewer Grid.Column="2">
+            <StackPanel>
+                <!--  HTTP Response:ヘッダー  -->
+                <GroupBox
+                    Margin="8"
+                    Header="HTTP Response ヘッダ"
+                    Style="{StaticResource MaterialDesignHeaderedContentControl}">
+                    <DataGrid
+                        Margin="16,4"
+                        AllowDrop="False"
+                        AutoGenerateColumns="False"
+                        Foreground="Crimson"
+                        FrozenColumnCount="1"
+                        HorizontalScrollBarVisibility="Auto"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding OutHeaders, Mode=OneTime}"
+                        SelectionMode="Extended"
+                        Style="{StaticResource MaterialDesignDataGrid}">
+                        <DataGrid.Columns>
+                            <!--  ヘッダ名(キー)  -->
+                            <DataGridTextColumn
+                                Binding="{Binding Key.Value}"
+                                CanUserResize="True"
+                                CanUserSort="False"
+                                Header="ヘッダ名" />
+                            <!--  値  -->
+                            <DataGridTextColumn
+                                Binding="{Binding Value.Value}"
+                                CanUserResize="False"
+                                CanUserSort="False"
+                                Header="値" />
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu Style="{StaticResource MaterialDesignContextMenu}">
+                                <MenuItem Command="ApplicationCommands.Copy" Header="コピー">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ContentCopy" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                    </DataGrid>
+                </GroupBox>
+
+                <!--  HTTP Response:コンテンツ  -->
+                <GroupBox
+                    Margin="8"
+                    Header="HTTP Response コンテンツ"
+                    Style="{StaticResource MaterialDesignHeaderedContentControl}">
+                    <ScrollViewer
+                        Margin="16,4"
+                        HorizontalAlignment="Stretch"
+                        HorizontalScrollBarVisibility="Auto">
+                        <TextBox
+                            MaxHeight="400"
+                            Margin="4"
+                            AcceptsReturn="True"
+                            Foreground="Crimson"
+                            IsReadOnly="True"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding HttpContent.Value}" />
+                    </ScrollViewer>
+                </GroupBox>
+
+                <!--  HTTPリクエスト:ヘッダー  -->
+                <GroupBox
+                    Margin="8"
+                    Header="HTTP Request ヘッダ"
+                    Style="{StaticResource MaterialDesignHeaderedContentControl}">
+                    <DataGrid
+                        Margin="16,4"
+                        AllowDrop="False"
+                        AutoGenerateColumns="False"
+                        Foreground="Crimson"
+                        FrozenColumnCount="1"
+                        HorizontalScrollBarVisibility="Auto"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding InHeaders, Mode=OneTime}"
+                        SelectionMode="Extended"
+                        Style="{StaticResource MaterialDesignDataGrid}">
+                        <DataGrid.Columns>
+                            <!--  ヘッダ名(キー)  -->
+                            <DataGridTextColumn
+                                Binding="{Binding Key.Value}"
+                                CanUserResize="True"
+                                CanUserSort="False"
+                                Header="ヘッダ名" />
+                            <!--  値  -->
+                            <DataGridTextColumn
+                                Binding="{Binding Value.Value}"
+                                CanUserResize="False"
+                                CanUserSort="False"
+                                Header="値" />
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu Style="{StaticResource MaterialDesignContextMenu}">
+                                <MenuItem Command="ApplicationCommands.Copy" Header="コピー">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ContentCopy" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                    </DataGrid>
+                </GroupBox>
+
+                <!--  HTTPリクエスト:パラメータ  -->
+                <GroupBox
+                    Margin="8"
+                    Header="HTTP Request ヘッダ"
+                    Style="{StaticResource MaterialDesignHeaderedContentControl}">
+                    <DataGrid
+                        Margin="16,4"
+                        AllowDrop="False"
+                        AutoGenerateColumns="False"
+                        Foreground="Crimson"
+                        FrozenColumnCount="1"
+                        HorizontalScrollBarVisibility="Auto"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding InParameters, Mode=OneTime}"
+                        SelectionMode="Extended"
+                        Style="{StaticResource MaterialDesignDataGrid}">
+                        <DataGrid.Columns>
+                            <!--  パラメータ名(キー)  -->
+                            <DataGridTextColumn
+                                Binding="{Binding Key.Value}"
+                                CanUserResize="True"
+                                CanUserSort="False"
+                                Header="パラメータ名" />
+                            <!--  値  -->
+                            <DataGridTextColumn
+                                Binding="{Binding Value.Value}"
+                                CanUserResize="False"
+                                CanUserSort="False"
+                                Header="値" />
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu Style="{StaticResource MaterialDesignContextMenu}">
+                                <MenuItem Command="ApplicationCommands.Copy" Header="コピー">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ContentCopy" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                    </DataGrid>
+                </GroupBox>
+
+                <!--  HTTPリクエスト: JSON Body  -->
+                <GroupBox
+                    Margin="8"
+                    Header="HTTP Request Jsonボディ"
+                    Style="{StaticResource MaterialDesignHeaderedContentControl}">
+                    <ScrollViewer
+                        Margin="16,4"
+                        HorizontalAlignment="Stretch"
+                        HorizontalScrollBarVisibility="Auto">
+                        <TextBox
+                            Margin="4"
+                            AcceptsReturn="True"
+                            Foreground="Crimson"
+                            IsReadOnly="True"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding InJsonBody.Value}" />
+                    </ScrollViewer>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

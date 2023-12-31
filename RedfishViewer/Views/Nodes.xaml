@@ -1,0 +1,190 @@
+﻿<UserControl
+    x:Class="RedfishViewer.Views.Nodes"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:rp="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    prism:ViewModelLocator.AutoWireViewModel="True"
+    Background="{DynamicResource MaterialDesignPaper}"
+    FontFamily="{materialDesign:MaterialDesignFont}"
+    TextElement.FontSize="14"
+    TextElement.FontWeight="Medium"
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <rp:EventToReactiveCommand Command="{Binding LoadedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <DockPanel Margin="0,4,0,0" HorizontalAlignment="Right">
+            <!--  プラグイン  -->
+            <ComboBox
+                MinWidth="100"
+                Margin="8,0"
+                materialDesign:HintAssist.Hint="プラグイン"
+                materialDesign:HintAssist.IsFloating="True"
+                materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                IsEnabled="{Binding PluginEnabled.Value}"
+                ItemsSource="{Binding PluginNames}"
+                SelectedItem="{Binding PluginName.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Style="{StaticResource MaterialDesignFloatingHintComboBox}" />
+            <!--  アクション1  -->
+            <Button
+                Width="100"
+                Margin="8,0"
+                Command="{Binding Action1Command}"
+                Content="{Binding Action1Content.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                IsEnabled="{Binding Action1Enabled.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                ToolTip="{Binding Action1ToolTip.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <!--  アクション2  -->
+            <Button
+                Width="100"
+                Margin="8,0"
+                Command="{Binding Action2Command}"
+                Content="{Binding Action2Content.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                IsEnabled="{Binding Action2Enabled.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                ToolTip="{Binding Action2ToolTip.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+            <!--  保存  -->
+            <Button
+                Width="100"
+                Margin="100,0,8,0"
+                Command="{Binding SaveNodesCommand}"
+                Content="保存"
+                DockPanel.Dock="Right"
+                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                ToolTip="編集した情報を保存します（画面を切り替えると自動保存します）" />
+        </DockPanel>
+        <DataGrid
+            Grid.Row="1"
+            AllowDrop="False"
+            AutoGenerateColumns="False"
+            CanUserAddRows="false"
+            FrozenColumnCount="2"
+            HorizontalScrollBarVisibility="Auto"
+            ItemsSource="{Binding Nodes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedIndex="{Binding NodeIndex.Value}"
+            SelectedItem="{Binding NodeItem.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectionMode="Single"
+            Style="{StaticResource MaterialDesignDataGrid}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="LoadingRow">
+                    <rp:EventToReactiveCommand Command="{Binding LoadingRowCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn CanUserResize="False" Header="No.">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--  ルートURI  -->
+                <DataGridTextColumn
+                    MinWidth="150"
+                    Binding="{Binding RootUri.Value}"
+                    CanUserResize="False"
+                    Header="Uri"
+                    IsReadOnly="True" />
+                <!--  ユーザ名  -->
+                <DataGridTextColumn
+                    MinWidth="100"
+                    Binding="{Binding Username.Value}"
+                    CanUserResize="False"
+                    Header="ユーザ名"
+                    IsReadOnly="True" />
+                <!--  パスワード  -->
+                <DataGridTemplateColumn
+                    MinWidth="100"
+                    CanUserResize="False"
+                    Header="パスワード">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                Text="{Binding DecryptPassword.Value}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--  プラグイン  -->
+                <DataGridTextColumn
+                    MinWidth="100"
+                    Binding="{Binding Plugin.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    CanUserResize="False"
+                    Header="プラグイン"
+                    IsReadOnly="True" />
+                <!--  タイトル  -->
+                <DataGridTextColumn
+                    MinWidth="150"
+                    Binding="{Binding Title.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    CanUserResize="False"
+                    Header="タイトル" />
+                <!--  概要  -->
+                <DataGridTextColumn
+                    MinWidth="200"
+                    Binding="{Binding Summary.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    CanUserResize="False"
+                    Header="概要" />
+                <!--  備考  -->
+                <DataGridTextColumn
+                    MinWidth="200"
+                    Binding="{Binding Note.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    CanUserResize="False"
+                    Header="備考" />
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu Style="{StaticResource MaterialDesignContextMenu}">
+                    <MenuItem Command="ApplicationCommands.Copy" Header="コピー">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentCopy" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem
+                        Command="{Binding SetAccountCommand}"
+                        Header="アカウント反映"
+                        ToolTip="このノードのユーザ名とパスワードをBasic認証に反映します">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="AccountArrowRight" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Command="{Binding LoadResultsCommand}"
+                        Header="DBから読み込む"
+                        ToolTip="このノードに関する全ての情報を表示します">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="DatabaseExport" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem
+                        Command="{Binding RemoveResultsCommand}"
+                        Header="DBから削除する"
+                        ToolTip="このノードに関連する全ての情報を削除します">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="DatabaseRemove" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+    </Grid>
+</UserControl>
