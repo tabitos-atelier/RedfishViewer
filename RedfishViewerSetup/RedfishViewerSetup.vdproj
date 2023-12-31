@@ -326,14 +326,14 @@
             {
             "Name" = "8:Redfish Viewer"
             "Arguments" = "8:"
-            "Description" = "8:"
+            "Description" = "8:Redfish Viewer"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
             "Target" = "8:_D6703B2158154FF48E93938EAD332C4C"
             "Folder" = "8:_CF4B883FF3864B4C8F91B1C33087D0F0"
             "WorkingFolder" = "8:_8FD161512B764084827A64EA8484055D"
-            "Icon" = "8:"
+            "Icon" = "8:_38BD6CA4B9B44393A3C067C202A21D1C"
             "Feature" = "8:"
             }
         }
