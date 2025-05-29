@@ -9,11 +9,11 @@
     d:DesignHeight="576"
     d:DesignWidth="1024"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignPaper}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     FontFamily="{materialDesign:MaterialDesignFont}"
     TextElement.FontSize="14"
     TextElement.FontWeight="Medium"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
     mc:Ignorable="d">
     <Grid Margin="0,4">
         <Grid.RowDefinitions>
@@ -30,14 +30,14 @@
                 Margin="8,0"
                 Command="{Binding UriEncodeCommand}"
                 Content="エンコード"
-                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{StaticResource MaterialDesignRaisedButton}"
                 ToolTip="入力された文字列をURLエンコードします" />
             <Button
                 Width="100"
                 Margin="8,0"
                 Command="{Binding UriDecodeCommand}"
                 Content="デコード"
-                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{StaticResource MaterialDesignRaisedButton}"
                 ToolTip="入力された文字列をURLデコードします" />
         </StackPanel>
         <!--  URI  -->

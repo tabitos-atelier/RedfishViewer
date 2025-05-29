@@ -13,11 +13,11 @@
     d:DesignHeight="576"
     d:DesignWidth="1024"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignPaper}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     FontFamily="{materialDesign:MaterialDesignFont}"
     TextElement.FontSize="14"
     TextElement.FontWeight="Medium"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -33,6 +33,7 @@
                     <ToggleButton
                         Margin="16"
                         DockPanel.Dock="Top"
+                        Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                         IsChecked="{Binding ElementName=HamburgerMenu, Path=IsChecked, Mode=TwoWay}"
                         Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
                     <!--  HTTPレスポンス情報(HttpResponse)  -->
@@ -47,7 +48,11 @@
                                 Height="Auto"
                                 Kind="Web" />
                         </Button>
-                        <TextBlock HorizontalAlignment="Center" Text="RestAPI" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Text="RestAPI" />
                     </StackPanel>
                     <!--  HTTPレスポンス・エラー情報  -->
                     <StackPanel Margin="16,8">
@@ -61,7 +66,11 @@
                                 Height="Auto"
                                 Kind="Alert" />
                         </Button>
-                        <TextBlock HorizontalAlignment="Center" Text="Errros" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Text="Errros" />
                     </StackPanel>
                     <!--  ノード情報  -->
                     <StackPanel Margin="16,8">
@@ -76,7 +85,11 @@
                                 Height="Auto"
                                 Kind="Server" />
                         </Button>
-                        <TextBlock HorizontalAlignment="Center" Text="Nodes" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Text="Nodes" />
                     </StackPanel>
                     <!--  アプリ構成  -->
                     <StackPanel Margin="16,8">
@@ -90,7 +103,11 @@
                                 Height="Auto"
                                 Kind="Settings" />
                         </Button>
-                        <TextBlock HorizontalAlignment="Center" Text="Settings" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Text="Settings" />
                     </StackPanel>
                     <!--  ツール  -->
                     <StackPanel Margin="16,8">
@@ -104,7 +121,11 @@
                                 Height="Auto"
                                 Kind="Toolbox" />
                         </Button>
-                        <TextBlock HorizontalAlignment="Center" Text="Tools" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Text="Tools" />
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
@@ -124,7 +145,7 @@
                         Content="{materialDesign:PackIcon Kind=Plus}"
                         DockPanel.Dock="Right"
                         IsChecked="False"
-                        Style="{StaticResource MaterialDesignActionAccentToggleButton}"
+                        Style="{StaticResource MaterialDesignActionSecondaryToggleButton}"
                         ToolTip="HTTPリクエストの入力欄表示をオン・オフします" />
 
                     <!--  Hamburger Menu  -->
@@ -145,7 +166,7 @@
 
                     <!--  自動検索ボタン  -->
                     <ToggleButton
-                        Margin="8,0"
+                        Margin="16,0"
                         IsChecked="{Binding AutoDiveChecked.Value, UpdateSourceTrigger=PropertyChanged}"
                         IsEnabled="{Binding AutoDiveEnabled.Value}"
                         Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
@@ -153,7 +174,7 @@
 
                     <!--  HTTP Request Uri  -->
                     <materialDesign:ColorZone
-                        Margin="8,0,48,0"
+                        Margin="0,0,48,0"
                         Padding="4"
                         Panel.ZIndex="1"
                         CornerRadius="4"
@@ -408,7 +429,7 @@
                                         VerticalAlignment="Top"
                                         Command="{Binding HttpJsonBodyFormatCommand}"
                                         Content="整形"
-                                        Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                                        Style="{StaticResource MaterialDesignRaisedButton}"
                                         ToolTip="JSON を整形してインデント処理を実施します" />
                                 </Grid>
                             </GroupBox>

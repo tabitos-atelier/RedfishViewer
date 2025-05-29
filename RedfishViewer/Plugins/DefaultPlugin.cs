@@ -1,5 +1,5 @@
 ﻿using NLog;
-using Prism.Services.Dialogs;
+using Prism.Dialogs;
 using RedfishViewer.Services;
 using System;
 using System.Threading.Tasks;

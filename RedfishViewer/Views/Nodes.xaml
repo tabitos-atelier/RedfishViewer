@@ -11,11 +11,11 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignPaper}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     FontFamily="{materialDesign:MaterialDesignFont}"
     TextElement.FontSize="14"
     TextElement.FontWeight="Medium"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -46,7 +46,7 @@
                 Command="{Binding Action1Command}"
                 Content="{Binding Action1Content.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 IsEnabled="{Binding Action1Enabled.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{StaticResource MaterialDesignRaisedButton}"
                 ToolTip="{Binding Action1ToolTip.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <!--  アクション2  -->
             <Button
@@ -55,7 +55,7 @@
                 Command="{Binding Action2Command}"
                 Content="{Binding Action2Content.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 IsEnabled="{Binding Action2Enabled.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{StaticResource MaterialDesignRaisedButton}"
                 ToolTip="{Binding Action2ToolTip.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
             <!--  保存  -->
@@ -65,7 +65,7 @@
                 Command="{Binding SaveNodesCommand}"
                 Content="保存"
                 DockPanel.Dock="Right"
-                Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
                 ToolTip="編集した情報を保存します（画面を切り替えると自動保存します）" />
         </DockPanel>
         <DataGrid

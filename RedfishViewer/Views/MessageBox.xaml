@@ -11,11 +11,11 @@
     d:DesignHeight="225"
     d:DesignWidth="400"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignPaper}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     FontFamily="{materialDesign:MaterialDesignFont}"
     TextElement.FontSize="14"
     TextElement.FontWeight="Medium"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
     mc:Ignorable="d">
     <prism:Dialog.WindowStyle>
         <Style TargetType="Window">
@@ -37,7 +37,7 @@
             <materialDesign:PackIcon
                 Width="48"
                 Height="48"
-                Foreground="{StaticResource SecondaryHueMidBrush}"
+                Foreground="{StaticResource MaterialDesign.Brush.Secondary}"
                 Kind="{Binding IconKind.Value}" />
             <TextBlock
                 Width="300"
@@ -58,7 +58,7 @@
                 Command="{Binding OkCommand}"
                 Content="OK"
                 IsCancel="false"
-                Style="{DynamicResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{DynamicResource MaterialDesignRaisedButton}"
                 Visibility="{Binding OkVisibility.Value}" />
             <!--  はい  -->
             <Button
@@ -67,7 +67,7 @@
                 VerticalAlignment="Center"
                 Command="{Binding YesCommand}"
                 Content="はい"
-                Style="{DynamicResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{DynamicResource MaterialDesignRaisedButton}"
                 Visibility="{Binding YesVisibility.Value}" />
             <!--  いいえ  -->
             <Button
@@ -76,7 +76,7 @@
                 VerticalAlignment="Center"
                 Command="{Binding NoCommand}"
                 Content="いいえ"
-                Style="{DynamicResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{DynamicResource MaterialDesignRaisedSecondaryButton}"
                 Visibility="{Binding NoVisibility.Value}" />
             <!--  キャンセル  -->
             <Button
@@ -85,9 +85,8 @@
                 VerticalAlignment="Center"
                 Command="{Binding CancelCommand}"
                 Content="キャンセル"
-                Foreground="Crimson"
                 IsCancel="True"
-                Style="{DynamicResource MaterialDesignOutlinedSecondaryButton}"
+                Style="{DynamicResource MaterialDesignRaisedSecondaryButton}"
                 Visibility="{Binding CancelVisibility.Value}" />
         </StackPanel>
     </Grid>

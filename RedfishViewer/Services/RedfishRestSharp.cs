@@ -2,8 +2,8 @@
 using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using NLog;
+using Prism.Dialogs;
 using Prism.Events;
-using Prism.Services.Dialogs;
 using RedfishViewer.Events;
 using RedfishViewer.Models;
 using RedfishViewer.Plugins;
@@ -18,6 +18,7 @@ using System.Net;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity;
 
@@ -72,7 +73,7 @@ namespace RedfishViewer.Services
                 var item = dbAgent.GetSetting(1);
                 if (item != null && item.Json != null)
                 {
-                    Configure = JsonConvert.DeserializeObject<Configure>(item.Json) ?? new Configure();
+                    Configure = JsonConvert.DeserializeObject<Configure>(item.Json) ?? new();
                     Configure.ProxyPassword = CryptoAes.Decrypt(Configure.ProxyPassword) ?? string.Empty;
                     SetSwatch();
                 }
@@ -102,11 +103,16 @@ namespace RedfishViewer.Services
         {
             var palette = new PaletteHelper();
             var theme = palette.GetTheme();
-            theme.SetBaseTheme(Configure.IsDark ? Theme.Dark : Theme.Light);                    // ライト or ダークモード
+            theme.SetBaseTheme(Configure.IsDark ? BaseTheme.Dark : BaseTheme.Light);            // ライト or ダークモード
             theme.SetPrimaryColor(Swatches[Configure.PrimaryColor].PrimaryHues[5].Color);       // プライマリ色
             theme.SetSecondaryColor(Swatches[Configure.SecondaryColor].PrimaryHues[5].Color);   // セカンダリ色
-            if (Configure.IsColorAdjustment)
-                theme.AdjustColors();                                                           // 色調整
+            theme.ColorAdjustment = !Configure.IsColorAdjustment ? null :
+                new ColorAdjustment
+                {
+                    DesiredContrastRatio = 4.5f,    // コントラスト比
+                    Contrast = Contrast.Medium,     // コントラスト
+                    Colors = ColorSelection.All     // 対象範囲
+                };
             palette.SetTheme(theme);
         }
 
@@ -208,7 +214,7 @@ namespace RedfishViewer.Services
                 // クライアント設定
                 var options = new RestClientOptions()
                 {
-                    MaxTimeout = 0 < Configure.MaxTimeout ? Configure.MaxTimeout * 1000 : -1,
+                    Timeout = 0 < Configure.MaxTimeout ? TimeSpan.FromSeconds(Configure.MaxTimeout) : Timeout.InfiniteTimeSpan,
                     RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
                     Authenticator = new HttpBasicAuthenticator(search.Username, search.Password),
                 };

@@ -1,7 +1,7 @@
 ﻿using NLog;
 using Prism.Mvvm;
 using Prism.Navigation;
-using Prism.Services.Dialogs;
+using Prism.Dialogs;
 using Reactive.Bindings;
 using Reactive.Bindings.Disposables;
 using Reactive.Bindings.Extensions;
@@ -19,7 +19,7 @@ namespace RedfishViewer.ViewModels
         private readonly CompositeDisposable _disposables = [];
 
         public string Title => "RedfishViwerメッセージ";
-        public event Action<IDialogResult>? RequestClose;                       // 閉じるとき呼び出す
+        public DialogCloseListener RequestClose { get; }                        // 閉じるとき呼び出す
 
         public ReactivePropertySlim<string> IconKind { get; set; }              // アイコン名称
         public ReactivePropertySlim<string> Message { get; set; }               // メッセージ本文
@@ -66,22 +66,22 @@ namespace RedfishViewer.ViewModels
 
             // OKボタン
             OkCommand = new ReactiveCommandSlim()
-                .WithSubscribe(() => RequestClose?.Invoke(new DialogResult(ButtonResult.OK)))
+                .WithSubscribe(() => RequestClose.Invoke(new DialogResult(ButtonResult.OK)))
                 .AddTo(_disposables);
 
             // はいボタン
             YesCommand = new ReactiveCommandSlim()
-                .WithSubscribe(() => RequestClose?.Invoke(new DialogResult(ButtonResult.Yes)))
+                .WithSubscribe(() => RequestClose.Invoke(new DialogResult(ButtonResult.Yes)))
                 .AddTo(_disposables);
 
             // いいえボタン
             NoCommand = new ReactiveCommandSlim()
-                .WithSubscribe(() => RequestClose?.Invoke(new DialogResult(ButtonResult.No)))
+                .WithSubscribe(() => RequestClose.Invoke(new DialogResult(ButtonResult.No)))
                 .AddTo(_disposables);
 
             // キャンセルボタン
             CancelCommand = new ReactiveCommandSlim()
-                .WithSubscribe(() => RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel)))
+                .WithSubscribe(() => RequestClose.Invoke(new DialogResult(ButtonResult.Cancel)))
                 .AddTo(_disposables);
         }
 

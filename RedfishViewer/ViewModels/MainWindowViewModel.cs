@@ -2,7 +2,7 @@
 using Prism.Ioc;
 using Prism.Mvvm;
 using Prism.Navigation;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using Reactive.Bindings;
 using Reactive.Bindings.Disposables;
 using Reactive.Bindings.Extensions;
