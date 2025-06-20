@@ -1,6 +1,6 @@
 # Redfish Server
 
-Redfish エミュレータを用意しました。
+Redfish シミュレータを用意しました。
 RedfishViewer の README の作成にも利用しています。
 
 ## 起動
@@ -18,7 +18,7 @@ $ pip3 install fastapi
 $ pip3 install "uvicorn[standard]"
 ```
 
-Redfish エミュレータを起動します。
+Redfish シミュレータを起動します。
 
 ```bash
 $ uvicorn main:app --reload

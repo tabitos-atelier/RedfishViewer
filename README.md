@@ -1,180 +1,87 @@
 # RedfishViewer
 
-この RedfishViewer は、Redfish の @odata.id を取得するために、以下の 1～3 の手順を延々と繰り返すことが面倒で、自動的に @odata.id を全て取得してくれるツールが欲しかったのが出発点となっています。
+> **Redfishという古代遺跡の、魂の深淵を覗くための魔法の眼鏡**
 
-1. リクエスト結果のJSONコンテンツ内の @odata.id から Uri を取得する。("@odata.id": "/redfish/v1/xxx")
-2. 先頭にスキーマとIPアドレスを付加し、Uri を作成する。(https//IPアドレス/redfish/v1/xxx)
-3. リクエストを発行し、JSONデータを取得する。
+---
 
-[Redfish](https://www.dmtf.org/standards/redfish) の記載をウィキペディア(翻訳)から抜粋します。
-> Redfish 標準は、業界標準のプロトコルを提供する一連の仕様です。 サーバー、ストレージ、ネットワーキング、統合インフラストラクチャを管理するためのRESTfulインターフェイスを提供します。<br />
+## 概要 (Overview)
 
-また、[HAL](https://en.wikipedia.org/wiki/Hypertext_Application_Language) 形式の href も @odata.id と同様に取得できるようにしています。
+**RedfishViewer** は、サーバー管理APIである**Redfish**のツリー構造を、グラフィカルかつ直感的に探索・表示するために開発された、WPFベースのデスクトップアプリケーションです。
 
-## 特徴
+このアプリケーションは、複雑な`@odata.id`のリンクを再帰的に辿り、分散したJSONデータを一枚の巨大な地図としてマージする機能を持ちます。これにより、あなたはRedfishという広大な迷宮を、迷うことなく探査できます。
 
-- Redfish レスポンス JSON 内の @odata.id または href を再帰的に全て取得することができます。
-- 結果が前回と異なる場合、比較を表示します。この情報はデータベースにも保存されます。
-- キーワード検索を実行し、ヒットしたキーワードをハイライトします。
-- データベースに保存した結果を表示することができます。
+### この「魂の鎧」が生まれた理由
 
-## 動作条件
+このプロジェクトの真の目的は、単なるRedfishビューワの開発ではありませんでした。
+それは、かつて`TubeEater`開発で道半ばで断念した、**WPFにおけるMVVMパターンと、その実現のためのフレームワーク「Prism」を完全に習得する**という、私自身の雪辱戦でもあります。
 
-RedfishViewer は .NET 8 で動作する Windows アプリケーションです。
+このソースコードには、数ヶ月にわたる試行錯誤の末に体得した、Prismフレームワークの実践的なノウハウが凝縮されています。
 
-このため、**.NET デスクトップ ランタイム**が必要になります。
+## 主な特徴 (Features)
 
-[.NET 8.0 のダウンロード](https://dotnet.microsoft.com/ja-jp/download/dotnet/8.0)
+### 1. 高度な探索・分析機能 (Advanced Exploration & Analysis)
 
-## インストール
+*   **自動ツリー探索:** `@odata.id`を再帰的にクロールし、Redfishの全貌を明らかにします。
+*   **強力な全文検索:** **正規表現**に対応した検索機能で、巨大なJSONから目的の情報を瞬時に発見。ヒット箇所はハイライトされ、検索履歴はサジェストされます。
+*   **差分比較表示 (世代管理):**
+    *   前回取得したデータとの**差分を、GitHubのように赤と緑でハイライト表示**します。
+    *   **最大2世代分の取得履歴**がローカルDBに自動で保存され、いつでも過去の状態をロードして比較・分析できます。
 
-お使いの Windows 環境に MSI インストーラをダウンロードし、インストールしてください。
+### 2. 柔軟なデータ管理と操作 (Flexible Data Management & Operation)
 
-または、ZIP ファイルをダウンロードし、任意の場所に解凍してください。
+*   **ノード管理機能:**
+    *   複数のサーバー（ノード）情報をリストで管理。IPアドレスだけでは識別が困難にならないよう、**「タイトル」「概要」「備考」** を自由に編集できます。
+*   **認証情報管理:**
+    *   ノードごとにBASIC認証のID/パスワードを登録可能。登録した情報は、ノード選択時に右クリックメニューから入力欄に反映することができます。
+*   **ポータブルなDB:**
+    *   全ての取得データや設定は、単一のSQLiteデータベースファイルに保存されます。このファイルを共有するだけで、**他のメンバーも同じ解析結果をオフラインで確認可能**です。不要なデータはいつでも削除できます。
+*   **多彩なリクエストメソッド:**
+    *   `GET`だけでなく、`POST`/`PATCH`/`PUT`/`DELETE`にも対応。カスタムヘッダーやJSONパラメータを指定して、より高度な対話が可能です。（※`GET`以外のメソッドは検証が不十分です）
 
-## 使い方
+### 3. 優れたUXと拡張性 (Superior UX & Extensibility)
 
-インストーラを使った場合、RedfishViewer のショートカットをクリックしてください。
-ZIP ファイルの場合、解凍先の RedfishViewer.exe をクリックしてください。
+*   **リアルタイム・トースト通知:** 自動探索の進捗や完了・エラーを、リアルタイムに把握できます。
+*   **柔軟なテーマ設定:** ライト/ダークモード、19色のアクセントカラー、カラーアジャスト機能で、自分だけの最適な表示環境を構築できます。
+*   **プラグインによる機能拡張:** 外部DLLによるプラグインで、ノード一覧のカスタムアクションを自由に追加できます。（例：「BMCのWebUIへSSO接続」など）
+*   **企業利用への配慮:**
+    *   認証情報は**暗号化**して安全に保存します。
+    *   **プロキシサーバー**経由での通信にも対応しています。
+*   **便利なユーティリティ:** URLエンコード/デコードツールを内蔵しています。
 
-![起動直後](/../images/RedfishViewer_01.png)
+## 動作条件 (Prerequisites)
 
-上部の青い部分を左側側から順番に説明します。
+*   **OS:** Windows 10 / 11
+*   **フレームワーク:** **[.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/ja-jp/download/dotnet/8.0)**
 
-### メニュー表示
+## インストール (Installation)
 
-三本線アイコンをクリックするとメニューが表示されます。メニューを選択すると、上部の青い部分および HTTP リクエストヘッダ領域(後述のプラスボタン押下時)以外の画面が切り替わります。
+1.  **[Releaseページ](https://github.com/sabakunotabito/RedfishViewer/releases)** から、最新版のインストーラ (`RedfishViewerSetup.msi`) をダウンロードします。
+2.  ファイルを実行してください。
 
-![メニュー](/../images/RedfishViewer_02.png)
+## 使い方 (Usage)
 
-- RestAPI：起動時の画面で、リクエストの結果を表示します。
-- Errors：リクエストに失敗すると、この画面に遷移します。
-- Nodes：ノード情報を表示・編集することができます。
-- Settings：テーマ、ネットワークに関して設定することができます。
-- Tools：漢字コードを含む URLエンコード文字列をデコードすることができます。(UTF-8のみ)
+1.  対話相手となる**Redfishシミュレータ（[RedfishServer](https://github.com/sabakunotabito/RedfishServer)）**、または実機を起動します。
+2.  RedfishViewerを起動し、サーバーのアドレス（例: `http://localhost:8000`）を入力します。
+3.  **自動検索モード**をオンにし、`/redfish/v1`へのリクエストを実行することで、全データの探索が開始されます。
 
-### HTTP リクエストメソッド
+## 開発の記録 (Development Journey)
 
-HTTPリクエストメソッドを GET, POST, PATCH, PUT, DELETE から選択します。
-GET 選択時のみ、横のチェックボックスをオンにすると、レスポンス内の @odata.id または href を再帰的に検索し、全ての結果を取得することができます(自動検索)。
+この「魂の鎧」が、どのような苦難の末に鍛え上げられたのか。その開発過程は、ブログに詳しく記されています。
 
-### URI/キーワード 入力
+![RedfishViewer Screenshot](/../images/RedfishViewer_07.png)
 
-Redfish または Rest API の Uri を入力します。Enter キーまたは赤い魚アイコンをクリックするとリクエストを発行します。
-また、先頭が "http(s)://" 以外の場合、キーワード検索となります。
+*   **[砂漠の旅人 - RedfishViewer開発譚](https://sabakunotabito.hatenablog.com/archive/category/RedfishViewer)**
 
-### HTTP リクエストヘッダ入力
+## 謝辞 (Acknowledgements)
 
-プラスボタンをクリックすると、HTTP リクエストヘッダを入力する領域が表示されます。
-マイナスボタンをクリックすると、HTTP リクエストヘッダを入力する領域を非表示にします。
+このアプリケーションは、以下の素晴らしいライブラリと、先人たちの知恵によって成り立っています。心から感謝申し上げます。
+*(アルファベット順)*
 
-![ヘッダ情報入力](/../images/RedfishViewer_03.png)
-
-- Basic認証：ユーザ名とパスワードを入力します。
-- HTTP Request ヘッダ：HTTP リクエスト ヘッダ情報を編集することができます。右クリックメニューで行を追加できます。また、直前の @odata.tag を If-Match に反映します。
-- HTTP Request パラメータ：パラメータを編集することができます。右クリックメニューで行を追加することができます。
-- HTTP Request Json ボディ：Json ボディを編集することができます。整形ボタンを押すとインデントを付きで表示します。
-
-### リクエスト実行
-
-リクエストを実行すると、左側に行単位でリクエストの結果を表示し、右側にレスポンスのコンテンツ内容を表示します。
-
-![リクエスト実行](/../images/RedfishViewer_04.png)
-
-左側のリクエスト結果の行を右クリックすると、メニューが表示されます。
-
-- コピー：選択している行の内容をクリップボードへコピーします。
-- リクエスト反映：選択している行のリクエスト情報を Uri や HTTP リクエストヘッダに反映します。
-- 結果をクリア：表示されている全ての行をクリアします。
-
-### レスポンスの前回比較
-
-2回以上リクエストを発行し、前回データベースに保存したデータと差異があった場合、前回日時に値が入ります。
-このとき、前回比較タブを選択すると画面が分割されて差異がハイライト表示されます。
-
-![前回比較](/../images/RedfishViewer_05.png)
-
-前回比較の画面は、赤いハイライトが過去分で、緑のハイライトが現在の値となります（日付昇順）。
-ただし、レスポンス一覧は、Uri が長くなったときを考慮して、更新日時・前回日時の順番で表示しています（日付降順）。
-
-### レスポンスのヘッダ情報
-
-レスポンス取得後、ヘッダタブを選択すると、レスポンスのヘッダ情報が表示されます。
-
-![レスポンスヘッダ](/../images/RedfishViewer_06.png)
-
-### 自動検索
-
-GET の横のチェックボックスをオンにして、リクエストを実行すると、レスポンス内の @odata.id または href を再帰的に検索します。
-このとき、検索した Uri は下図のように灰色のトースト形式で連続して表示されます。検索が終了すると、緑色のトーストがアプリ内とWindows デスクトップ右下に通知されます。
-リクエストの結果がエラーの場合、赤いトーストを表示し、エラー画面に記録します。
-
-![自動検索](/../images/RedfishViewer_07.png)
-
-### キーワード検索
-
-下図のように "http(s)://" スキーマ以外を入力すると、表示中のレスポンスが検索対象となります。
-このとき、検索にヒットした箇所はハイライト表示します。
-
-![キーワード検索](/../images/RedfishViewer_08.png)
-
-### エラー発生時
-
-リクエストを実行したとき、エラーが発生すると、エラー画面に遷移します。
-ただし、自動検索の場合、エラーが発生しても、エラー画面に遷移することはありません。
-
-![エラー発生](/../images/RedfishViewer_09.png)
-
-左側のエラー行を選択したとき、右クリックメニューが開きます。
-
-- コピー：選択している行の内容をクリップボードへコピーします。
-- リクエスト反映：選択している行のリクエスト情報を Uri や HTTP リクエストヘッダに反映します。
-- エラーをクリア：表示されている全ての行をクリアします。
-
-### ノード情報
-
-Nodes メニューを選択すると、HTTPリクエストに成功したノード一覧が表示されます。
-右クリックメニューを表示すると、行コピーができますが、パスワードは除外されます。
-また、パスワードは暗号化されてデータベースに保存します。
-
-タイトル・概要・備考は編集することができるため、ノード情報を整理することができます。
-
-![ノード情報](/../images/RedfishViewer_10.png)
-
-- プラグイン：初期は None と Default から選択できます。Default の場合、表示された Uri をブラウザで開くことができます。
-- アカウント反映：ユーザ名とパスワードを Basic認証の入力に反映します。
-- DB から読み込む：指定行に対して、これまでに取得した情報を RestAPI 画面にすべて表示します。
-- DB から削除する：指定行に対して、これまでに保存したノード情報を全て削除します。
-
-### 設定変更
-
-Settings メニューを選択すると、テーマとネットワークを変更することができます。
-
-![ノード情報](/../images/RedfishViewer_11.png)
-
-設定を変更できる内容は以下の通りです。
-
-- ダークモード：ダークとライトを切り替えます。
-- 色の調整：できるだけ目に優しい配色に調整します。（必ず調整されるとは限りません）
-- プライマリ色：メインとなるカラーを設定します。
-- セカンダリ色：アクセントとなる色を設定します。
-- タイムアウト：リクエストのタイムアウトを設定します。
-- プロキシ：プロキシを利用する場合、オンに設定します。
-- プロキシサーバ：プロキシサーバの Uri とポートを入力します。
-- プロキシユーザ：プロキシのユーザ名を入力します。
-- プロキシパスワード：プロキシのパスワードを入力します。パスワードは暗号化されてデータベースに保存します。
-
-## 謝辞
-
-RedfishViewer は、以下のパッケージを利用しています。公開して頂いた方々に深く感謝申し上げます。
-
-- [AutoMapper](https://automapper.org/)
-- [DiffPlex](https://github.com/mmanela/diffplex/)
-- [MaterialDesignThemes](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit)
-- [Microsoft.EntityFrameworkCore](https://learn.microsoft.com/ja-jp/ef/core/)
-- [Newtonsoft.Json](https://www.newtonsoft.com/json)
-- [NLog](https://nlog-project.org/)
-- [Notification.Wpf](https://github.com/Platonenkov/Notification.Wpf)
-- [Prism](https://github.com/PrismLibrary/Prism)
-- [ReactiveProperty](https://github.com/runceel/ReactiveProperty)
-- [RestSharp](https://restsharp.dev/)
+*   [DiffPlex](https://github.com/mmanela/diffplex-cs)
+*   [MaterialDesignInXamlToolkit](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit)
+*   [Newtonsoft.Json](https://www.newtonsoft.com/json)
+*   [NLog](https://nlog-project.org/)
+*   [Notification.Wpf](https://github.com/rafallopatka/notification-wpf)
+*   [Prism Library](https://github.com/PrismLibrary/Prism)
+*   [ReactiveProperty](https://github.com/runceel/ReactiveProperty)
+*   [RestSharp](https://restsharp.dev/)
