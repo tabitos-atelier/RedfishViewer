@@ -55,12 +55,12 @@
 
 ## インストール (Installation)
 
-1.  **[Releaseページ](https://github.com/sabakunotabito/RedfishViewer/releases)** から、最新版のインストーラ (`RedfishViewerSetup.msi`) をダウンロードします。
+1.  **[Releaseページ](https://github.com/tabitos-atelier/RedfishViewer/releases)** から、最新版のインストーラ (`RedfishViewerSetup.msi`) をダウンロードします。
 2.  ファイルを実行してください。
 
 ## 使い方 (Usage)
 
-1.  対話相手となる**Redfishシミュレータ（[RedfishServer](https://github.com/sabakunotabito/RedfishServer)）**、または実機を起動します。
+1.  対話相手となる**Redfishシミュレータ（[RedfishServer](https://github.com/tabitos-atelier/RedfishViewer/tree/main/RedfishServer)）**、または実機を起動します。
 2.  RedfishViewerを起動し、サーバーのアドレス（例: `http://localhost:8000`）を入力します。
 3.  **自動検索モード**をオンにし、`/redfish/v1`へのリクエストを実行することで、全データの探索が開始されます。
 
@@ -70,18 +70,18 @@
 
 ![RedfishViewer Screenshot](/../images/RedfishViewer_07.png)
 
-*   **[砂漠の旅人 - RedfishViewer開発譚](https://sabakunotabito.hatenablog.com/archive/category/RedfishViewer)**
+*   **[たびとの旅路 - RedfishViewer開発譚](https://tabitos-voyage.com/search?q=RedfishViewer)**
 
 ## 謝辞 (Acknowledgements)
 
 このアプリケーションは、以下の素晴らしいライブラリと、先人たちの知恵によって成り立っています。心から感謝申し上げます。
 *(アルファベット順)*
 
-*   [DiffPlex](https://github.com/mmanela/diffplex-cs)
+*   [DiffPlex](https://github.com/mmanela/diffplex)
 *   [MaterialDesignInXamlToolkit](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit)
 *   [Newtonsoft.Json](https://www.newtonsoft.com/json)
 *   [NLog](https://nlog-project.org/)
-*   [Notification.Wpf](https://github.com/rafallopatka/notification-wpf)
+*   [Notification.Wpf](https://github.com/Platonenkov/Notification.Wpf)
 *   [Prism Library](https://github.com/PrismLibrary/Prism)
 *   [ReactiveProperty](https://github.com/runceel/ReactiveProperty)
 *   [RestSharp](https://restsharp.dev/)
