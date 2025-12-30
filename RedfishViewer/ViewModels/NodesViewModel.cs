@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using NLog;
+using NLog.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation;
@@ -89,17 +90,27 @@ namespace RedfishViewer.ViewModels
             _redfishAdapter = unityContainer.Resolve<IRedfishAdapter>();
             _dbAgent = unityContainer.Resolve<IDatabaseAgent>();
 
+
+            // 【修正】NLogのファクトリーを作成
+            // NLog.Extensions.Logging.NLogLoggerFactory は ILoggerFactory を実装しています
+            var loggerFactory = new NLogLoggerFactory();
+
             // NodeViewModel を Node に変換する(読み込み時は不要)
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<NodeViewModel, Node>()
-                .ForMember(x => x.RootUri, option => option.MapFrom(x => x.RootUri.Value))
-                .ForMember(x => x.Username, option => option.MapFrom(x => x.Username.Value))
-                .ForMember(x => x.Password, option => option.MapFrom(x => x.Password.Value))
-                .ForMember(x => x.Created, option => option.MapFrom(x => x.Created.Value))
-                .ForMember(x => x.Updated, option => option.MapFrom(x => x.Updated.Value))
-                .ForMember(x => x.Plugin, option => option.MapFrom(x => x.Plugin.Value))
-                .ForMember(x => x.Title, option => option.MapFrom(x => x.Title.Value))
-                .ForMember(x => x.Summary, option => option.MapFrom(x => x.Summary.Value))
-                .ForMember(x => x.Note, option => option.MapFrom(x => x.Note.Value)));
+            var config = new MapperConfiguration(cfg =>
+            {
+                // 波括弧 { } で囲み、末尾にセミコロン ; を付けることで
+                // 「戻り値なし(Action)」として扱わせます。
+                cfg.CreateMap<NodeViewModel, Node>()
+                   .ForMember(x => x.RootUri, option => option.MapFrom(x => x.RootUri.Value))
+                   .ForMember(x => x.Username, option => option.MapFrom(x => x.Username.Value))
+                   .ForMember(x => x.Password, option => option.MapFrom(x => x.Password.Value))
+                   .ForMember(x => x.Created, option => option.MapFrom(x => x.Created.Value))
+                   .ForMember(x => x.Updated, option => option.MapFrom(x => x.Updated.Value))
+                   .ForMember(x => x.Plugin, option => option.MapFrom(x => x.Plugin.Value))
+                   .ForMember(x => x.Title, option => option.MapFrom(x => x.Title.Value))
+                   .ForMember(x => x.Summary, option => option.MapFrom(x => x.Summary.Value))
+                   .ForMember(x => x.Note, option => option.MapFrom(x => x.Note.Value));
+            }, loggerFactory);
             _mapper = new Mapper(config);
 
             // プラグイン

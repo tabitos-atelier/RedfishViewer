@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>RedfishViewer.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
@@ -16,6 +16,7 @@
     <PackageIcon>RedfishViewer.ico</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Redfish;Viewer</PackageTags>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="RedfishViewer.ico" />
@@ -27,18 +28,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="14.0.0" />
-    <PackageReference Include="DiffPlex.Wpf" Version="1.4.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="5.2.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NLog" Version="5.5.0" />
+    <PackageReference Include="AutoMapper" Version="16.0.0" />
+    <PackageReference Include="DiffPlex.Wpf" Version="1.9.1" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="NLog" Version="6.0.7" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.0" />
     <PackageReference Include="Notification.Wpf" Version="8.0.0" />
     <PackageReference Include="Prism.Unity" Version="9.0.537" />
-    <PackageReference Include="ReactiveProperty" Version="9.7.0" />
-    <PackageReference Include="ReactiveProperty.WPF" Version="9.7.0" />
-    <PackageReference Include="RestSharp" Version="112.1.0" />
-    <PackageReference Include="System.Reactive" Version="6.0.1" />
+    <PackageReference Include="ReactiveProperty" Version="9.8.0" />
+    <PackageReference Include="ReactiveProperty.WPF" Version="9.8.0" />
+    <PackageReference Include="RestSharp" Version="113.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config">
