@@ -1,6 +1,3 @@
 <Solution>
   <Project Path="RedfishViewer/RedfishViewer.csproj" />
-  <Project Path="RedfishViewerSetup/RedfishViewerSetup.vdproj" Type="Installer">
-    <Build />
-  </Project>
 </Solution>
