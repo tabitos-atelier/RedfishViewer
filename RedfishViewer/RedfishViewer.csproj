@@ -7,16 +7,17 @@
     <Nullable>enable</Nullable>
     <Title>$(AssemblyName)</Title>
     <Description>Redfish Viewer</Description>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
     <BaseOutputPath></BaseOutputPath>
     <Authors>Tabito</Authors>
-    <Copyright>Copyright(c) 2023 Tabito.</Copyright>
-    <PackageProjectUrl>https://github.com/sabakunotabito/RedfishViewer</PackageProjectUrl>
+    <Copyright>Copyright(c) 2023-2026 Tabito's Works.</Copyright>
+    <PackageProjectUrl>https://github.com/tabitos-atelier/RedfishViewer</PackageProjectUrl>
     <PackageIcon>RedfishViewer.ico</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Redfish;Viewer</PackageTags>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <Company>Tabito's Works</Company>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="RedfishViewer.ico" />

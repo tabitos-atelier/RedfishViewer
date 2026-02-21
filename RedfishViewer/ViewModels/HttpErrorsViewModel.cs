@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+// Copyright (c) 2023- Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using Newtonsoft.Json;
 using NLog;
 using Prism.Events;
 using Prism.Mvvm;

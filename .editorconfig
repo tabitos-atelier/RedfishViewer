@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# ファイル
+[*.cs]
+indent_style = space
+indent_size = 4
+file_header_template = Copyright (c) 2023- Tabito's Works\nLicensed under the MIT License. See LICENSE file in the project root for full license information.
+
+# XML / プロジェクトファイル
+[*.{csproj,proj,props,targets,json}]
+indent_style = space
+indent_size = 2

@@ -1,3 +1,9 @@
+# ---------------------------------------------------------------------------
+# Copyright (c) 2023-2026 Tabito's Works. All rights reserved.
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+# ---------------------------------------------------------------------------
 from fastapi import FastAPI, Response
 
 app = FastAPI()

@@ -1,4 +1,7 @@
-﻿namespace RedfishViewer.Models
+// Copyright (c) 2023- Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+namespace RedfishViewer.Models
 {
     /// <summary>
     /// アプリ構成（JSONで保存するため、追加削除は自由）
