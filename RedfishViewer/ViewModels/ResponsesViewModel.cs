@@ -1,7 +1,7 @@
-// Copyright (c) 2023- Tabito's Works
+// Copyright (c) 2023-2026 Tabito's Works
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json;
 using NLog;
 using Notification.Wpf;
 using Prism.Events;
@@ -21,8 +21,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -253,6 +251,7 @@ namespace RedfishViewer.ViewModels
                         await AutoDivingAsync(search);
                     }
                     _autoDiveStatus = _autoDiveMessageFlag = false;
+                    await _dbAgent.SaveDatabaseAsync();     // 自動検索完了後に一括保存する
                     var msg = new NotificationContent { Type = NotificationType.Success, Title = "RedfishViewer 自動取得", Message = "全てのコンテンツを取得しました。" };
                     _notificationManager.Show(msg, "ToastArea", onClose: () => _notificationManager.Show(msg));
                 }
@@ -326,8 +325,8 @@ namespace RedfishViewer.ViewModels
             if (result == null)
                 return;
 
-            // View 更新
-            _results.Add(await SaveResultAsync(result));
+            // View 更新（auto-dive 中は DB flush しない：完了後に一括保存）
+            _results.Add(await SaveResultAsync(result, flushDb: false));
 
             // 再帰自動検索
             foreach (var uri in _redfishAdapter.GetOdataIds(result))
@@ -342,8 +341,9 @@ namespace RedfishViewer.ViewModels
         /// 結果をデータベースに保存する
         /// </summary>
         /// <param name="result"></param>
+        /// <param name="flushDb">true のとき即時 SaveChanges する。auto-dive では false にして完了後に一括保存する。</param>
         /// <returns></returns>
-        private async Task<Result> SaveResultAsync(Result result)
+        private async Task<Result> SaveResultAsync(Result result, bool flushDb = true)
         {
             var record = _dbAgent.GetResult(result.Uri);
             if (record == null)
@@ -353,9 +353,7 @@ namespace RedfishViewer.ViewModels
             else
             {
                 // 既存のデータとコンテンツが異なる場合、データを更新する。
-                var hash1 = string.Join("", SHA256.HashData(Encoding.UTF8.GetBytes(result.Content ?? "")).Select(x => $"{x:x2}"));
-                var hash2 = string.Join("", SHA256.HashData(Encoding.UTF8.GetBytes(record.Content ?? "")).Select(x => $"{x:x2}"));
-                if (hash1 != hash2)
+                if (result.Content != record.Content)
                 {
                     record.LastContent = record.Content;                // 既存を前回エリアへ移動する
                     record.LastUpdated = record.Updated;                // 更新日付も前回エリアへ移動する
@@ -368,7 +366,8 @@ namespace RedfishViewer.ViewModels
                 result.LastContent = record.LastContent;
                 result.LastUpdated = record.LastUpdated;
             }
-            await _dbAgent.SaveDatabaseAsync();
+            if (flushDb)
+                await _dbAgent.SaveDatabaseAsync();
             return result;
         }
 
@@ -383,10 +382,16 @@ namespace RedfishViewer.ViewModels
             // 現旧コンテンツ
             var newText = model.Content.Value;
             if (newText != null && model.IsJsonText.Value)
-                newText = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(newText), Formatting.Indented);
+            {
+                using var nd = JsonDocument.Parse(newText, JsonHelper.DocumentOptions);
+                newText = JsonSerializer.Serialize(nd.RootElement, JsonHelper.Indented);
+            }
             var oldText = model.LastContent.Value;
             if (oldText != null && model.IsJsonText.Value)
-                oldText = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(oldText), Formatting.Indented);
+            {
+                using var od = JsonDocument.Parse(oldText, JsonHelper.DocumentOptions);
+                oldText = JsonSerializer.Serialize(od.RootElement, JsonHelper.Indented);
+            }
 
             // 現行コンテンツ
             var paragraph = new Paragraph();
@@ -400,7 +405,7 @@ namespace RedfishViewer.ViewModels
                     while (0 <= (i = pool.IndexOf(_searchWord, StringComparison.CurrentCultureIgnoreCase)))
                     {
                         // キーワードより前の文字列を抜き出す。
-                        if (1 < i)
+                        if (0 < i)
                         {
                             paragraph.Inlines.Add(pool[..i]);           // キーワードより前の文字列を格納する
                             pool = pool[i..];                           // 格納分をスキップ
@@ -444,21 +449,21 @@ namespace RedfishViewer.ViewModels
 
             // HTTPレスポンスヘッダー
             OutHeaders.Clear();
-            JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(model.OutHeaders.Value)?
+            JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(model.OutHeaders.Value, JsonHelper.Options)?
                 .ToList()
-                .ForEach(x => OutHeaders.Add(new KeyValueViewModel(new KeyValue (x.Key, x.Value))));
-            
+                .ForEach(x => OutHeaders.Add(new KeyValueViewModel(new KeyValue(x.Key, x.Value))));
+
             // HTTPリクエストヘッダー
             InHeaders.Clear();
             if (!string.IsNullOrEmpty(model.InHeaders.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(model.InHeaders.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(model.InHeaders.Value, JsonHelper.Options)?
                     .ToList()
                     .ForEach(x => InHeaders.Add(new KeyValueViewModel(new KeyValue(x.Key, x.Value))));
 
             // HTTPリクエストパラメータ
             InParameters.Clear();
             if (!string.IsNullOrEmpty(model.Parameters.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(model.Parameters.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(model.Parameters.Value, JsonHelper.Options)?
                     .ToList()
                     .ForEach(x => InParameters.Add(new KeyValueViewModel(new KeyValue(x.Key, x.Value))));
 
@@ -466,9 +471,15 @@ namespace RedfishViewer.ViewModels
             try
             {
                 var json = model.JsonBody.Value;
-                InJsonBody.Value = string.IsNullOrEmpty(json) ?
-                    string.Empty :
-                    JsonConvert.SerializeObject(JsonConvert.DeserializeObject(json), Formatting.Indented);
+                if (string.IsNullOrEmpty(json))
+                {
+                    InJsonBody.Value = string.Empty;
+                }
+                else
+                {
+                    using var doc = JsonDocument.Parse(json, JsonHelper.DocumentOptions);
+                    InJsonBody.Value = JsonSerializer.Serialize(doc.RootElement, JsonHelper.Indented);
+                }
             }
             catch
             {
@@ -507,7 +518,7 @@ namespace RedfishViewer.ViewModels
 
             // ヘッダ
             if (!string.IsNullOrEmpty(item.InHeaders.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.InHeaders.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.InHeaders.Value, JsonHelper.Options)?
                 .ToList()
                 .ForEach(x =>
                 {
@@ -517,7 +528,7 @@ namespace RedfishViewer.ViewModels
 
             // パラメータ
             if (!string.IsNullOrEmpty(item.Parameters.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.Parameters.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.Parameters.Value, JsonHelper.Options)?
                 .ToList()
                 .ForEach(x => search.Parameters.Add(x));
 
@@ -584,6 +595,8 @@ namespace RedfishViewer.ViewModels
         /// <returns></returns>
         private void LoadSpecificResults(string rootUri)
         {
+            _searchWord = null;         // キーワード検索状態をリセット
+            _backupResults = null;      // バックアップをクリアして前回の検索状態を引き継がないようにする
             _results.Clear();
             _dbAgent.GetSameRootUriResults(rootUri)?
                 .ToList()

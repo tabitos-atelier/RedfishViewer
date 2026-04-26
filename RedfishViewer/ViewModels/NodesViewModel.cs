@@ -1,9 +1,7 @@
-// Copyright (c) 2023- Tabito's Works
+// Copyright (c) 2023-2026 Tabito's Works
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using AutoMapper;
 using NLog;
-using NLog.Extensions.Logging;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation;
@@ -19,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -44,8 +43,6 @@ namespace RedfishViewer.ViewModels
         private readonly IEventAggregator _eventAggregator;                         // IEventAggregator
         private readonly IRedfishAdapter _redfishAdapter;                           // Redfish RestAPI
         private readonly IDatabaseAgent _dbAgent;                                   // DBアクセス
-
-        private readonly Mapper _mapper;                                            // ViewMode <-> Modelマッパー
 
         // プラグイン
         public ReactiveCollection<string> PluginNames { get; }                      // プラグイン
@@ -78,6 +75,7 @@ namespace RedfishViewer.ViewModels
         public ReactiveCommandSlim SetAccountCommand { get; }                       // アカウント設定
         public ReactiveCommandSlim LoadResultsCommand { get; }                      // レスポンス結果の読み込み
         public AsyncReactiveCommand RemoveResultsCommand { get; }                   // 関連情報の削除
+        public AsyncReactiveCommand ExportResultsCommand { get; }                   // JSONファイルにエクスポート
 
         /// <summary>
         /// NodesViewModel
@@ -93,29 +91,6 @@ namespace RedfishViewer.ViewModels
             _redfishAdapter = unityContainer.Resolve<IRedfishAdapter>();
             _dbAgent = unityContainer.Resolve<IDatabaseAgent>();
 
-
-            // 【修正】NLogのファクトリーを作成
-            // NLog.Extensions.Logging.NLogLoggerFactory は ILoggerFactory を実装しています
-            var loggerFactory = new NLogLoggerFactory();
-
-            // NodeViewModel を Node に変換する(読み込み時は不要)
-            var config = new MapperConfiguration(cfg =>
-            {
-                // 波括弧 { } で囲み、末尾にセミコロン ; を付けることで
-                // 「戻り値なし(Action)」として扱わせます。
-                cfg.CreateMap<NodeViewModel, Node>()
-                   .ForMember(x => x.RootUri, option => option.MapFrom(x => x.RootUri.Value))
-                   .ForMember(x => x.Username, option => option.MapFrom(x => x.Username.Value))
-                   .ForMember(x => x.Password, option => option.MapFrom(x => x.Password.Value))
-                   .ForMember(x => x.Created, option => option.MapFrom(x => x.Created.Value))
-                   .ForMember(x => x.Updated, option => option.MapFrom(x => x.Updated.Value))
-                   .ForMember(x => x.Plugin, option => option.MapFrom(x => x.Plugin.Value))
-                   .ForMember(x => x.Title, option => option.MapFrom(x => x.Title.Value))
-                   .ForMember(x => x.Summary, option => option.MapFrom(x => x.Summary.Value))
-                   .ForMember(x => x.Note, option => option.MapFrom(x => x.Note.Value));
-            }, loggerFactory);
-            _mapper = new Mapper(config);
-
             // プラグイン
             PluginNames = new ReactiveCollection<string>()
                 .AddTo(_disposables);
@@ -124,7 +99,7 @@ namespace RedfishViewer.ViewModels
                 .AddTo(_disposables);
             PluginName
                 .ObserveProperty(x => x.Value)
-                .Subscribe(SelectionChanged)
+                .Subscribe(OnPluginSelectionChanged)
                 .AddTo(_disposables);
             PluginEnabled = new ReactiveProperty<bool>(false)
                 .AddTo(_disposables);
@@ -195,6 +170,11 @@ namespace RedfishViewer.ViewModels
                 .WithSubscribe(RemoveSpecificResultsAsync)
                 .AddTo(_disposables);
 
+            // 右メニュー:DBのレスポンス情報をJSONファイルにエクスポートする
+            ExportResultsCommand = new AsyncReactiveCommand()
+                .WithSubscribe(ExportResultsAsync)
+                .AddTo(_disposables);
+
             // ノード情報更新のイベント検知
             _eventAggregator
                 .GetEvent<SaveNodeEvent<Node>>()
@@ -206,10 +186,10 @@ namespace RedfishViewer.ViewModels
             => _disposables.Dispose();
 
         /// <summary>
-        /// 選択行の変更イベント
+        /// プラグイン選択の変更イベント
         /// </summary>
         /// <param name="name"></param>
-        private void SelectionChanged(string? name)
+        private void OnPluginSelectionChanged(string? name)
         {
             if (name == null)
                 return;
@@ -311,7 +291,7 @@ namespace RedfishViewer.ViewModels
 
             // プラグイン設定
             PluginName.Value = name;
-            SelectionChanged(name);
+            OnPluginSelectionChanged(name);
         }
 
         /// <summary>
@@ -326,7 +306,18 @@ namespace RedfishViewer.ViewModels
             ((IEditableCollectionView)CollectionViewSource.GetDefaultView(Nodes)).CommitEdit();
 
             // ノード情報をデータベースに保存する
-            var nodes = _mapper.Map<List<Node>>(Nodes);
+            var nodes = Nodes.Select(x => new Node
+            {
+                RootUri   = x.RootUri.Value,
+                Username  = x.Username.Value,
+                Password  = x.Password.Value,
+                Created   = x.Created.Value,
+                Updated   = x.Updated.Value,
+                Plugin    = x.Plugin.Value,
+                Title     = x.Title.Value,
+                Summary   = x.Summary.Value,
+                Note      = x.Note.Value,
+            }).ToList();
             foreach (var node in nodes)
             {
                 _logger.Debug($"{node.Title},{node.RootUri},{node.Username},{node.Plugin},{node.Note}");
@@ -400,6 +391,53 @@ namespace RedfishViewer.ViewModels
             _dbAgent.RemoveSameRootUriResults(rootUri);     // 指定ホストを含むレコードを削除
             await _dbAgent.SaveDatabaseAsync();             // 削除の確定
             Nodes.RemoveAt(NodeIndex.Value);                // Viewからも削除
+        }
+
+        /// <summary>
+        /// DBのレスポンス情報をJSONファイルにエクスポートする
+        /// </summary>
+        /// <returns></returns>
+        private async Task ExportResultsAsync()
+        {
+            var rootUri = NodeItem.Value?.RootUri.Value;
+            if (rootUri == null)
+                return;
+
+            // フォルダ選択ダイアログ
+            var dialog = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "エクスポート先フォルダを選択してください",
+            };
+            if (dialog.ShowDialog() != true)
+                return;
+
+            var folderPath = dialog.FolderName;
+            var results = _dbAgent.GetSameRootUriResults(rootUri)?.ToList();
+            if (results == null || results.Count == 0)
+            {
+                _dialogService.AlertMessage("エクスポートするデータがありません。");
+                return;
+            }
+
+            var count = 0;
+            foreach (var result in results)
+            {
+                try
+                {
+                    var uri = new Uri(result.Uri);
+                    // URIパス部分の / を _ に置き換えてファイル名を生成する
+                    var fileName = uri.AbsolutePath.TrimEnd('/').Replace("/", "_") + ".json";
+                    var filePath = Path.Combine(folderPath, fileName);
+                    await File.WriteAllTextAsync(filePath, result.Content ?? string.Empty);
+                    count++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, $"エクスポートに失敗しました。({result.Uri})");
+                }
+            }
+
+            _dialogService.AlertMessage($"{count} 件のファイルをエクスポートしました。\n\n{folderPath}", "FolderOpen");
         }
 
         /// <summary>

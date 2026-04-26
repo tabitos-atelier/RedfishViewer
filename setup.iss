@@ -1,10 +1,10 @@
 ; Script generated for Tabito's Works RedfishViewer
-; Finalized for Version 2.0.0
 
 #define MyAppName "RedfishViewer"
 #define MyAppVersion "2.0.0"
 #define MyAppPublisher "Tabito's Works"
-#define MyAppURL "https://tabitos-voyage.com/"
+#define MyAppURL "https://github.com/tabitos-atelier/RedfishViewer"
+#define MyAppBlogURL "https://tabitos-voyage.com/"
 #define MyAppExeName "RedfishViewer.exe"
 
 [Setup]
@@ -14,9 +14,9 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
-AppSupportURL={#MyAppURL}
-AppUpdatesURL={#MyAppURL}
-AppCopyright=Copyright (C) 2023-2026 Tabito's Works
+AppSupportURL={#MyAppURL}/issues
+AppUpdatesURL={#MyAppURL}/releases
+AppCopyright=© 2023-2026 Tabito's Works
 
 ; --- インストール先・権限設定 ---
 DefaultDirName={localappdata}\TabitosWorks\{#MyAppName}
@@ -61,4 +61,4 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-Filename: "{#MyAppURL}"; Description: "Tabito's Works の活動拠点『たびとの旅路』を訪れる"; Flags: shellexec nowait postinstall runasoriginaluser
+Filename: "{#MyAppBlogURL}"; Description: "Tabito's Works の活動拠点『たびとの旅路』を訪れる"; Flags: shellexec nowait postinstall runasoriginaluser

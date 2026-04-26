@@ -1,4 +1,4 @@
-// Copyright (c) 2023- Tabito's Works
+// Copyright (c) 2023-2026 Tabito's Works
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using NLog;
@@ -21,7 +21,7 @@ namespace RedfishViewer.ViewModels
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly CompositeDisposable _disposables = [];
 
-        public string Title => "RedfishViwerメッセージ";
+        public string Title => "RedfishViewerメッセージ";
         public DialogCloseListener RequestClose { get; }                        // 閉じるとき呼び出す
 
         public ReactivePropertySlim<string> IconKind { get; set; }              // アイコン名称

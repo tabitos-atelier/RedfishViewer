@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="RedfishViewer.Views.Reqests"
+    x:Class="RedfishViewer.Views.Requests"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -70,7 +70,7 @@
                             HorizontalAlignment="Center"
                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                            Text="Errros" />
+                            Text="Errors" />
                     </StackPanel>
                     <!--  ノード情報  -->
                     <StackPanel Margin="16,8">
@@ -126,6 +126,23 @@
                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                             Style="{StaticResource MaterialDesignCaptionTextBlock}"
                             Text="Tools" />
+                    </StackPanel>
+                    <!--  バージョン情報  -->
+                    <StackPanel Margin="16,8">
+                        <Button
+                            Command="{Binding MenuChangedCommand}"
+                            CommandParameter="About"
+                            Style="{StaticResource MaterialDesignIconButton}">
+                            <materialDesign:PackIcon
+                                Width="Auto"
+                                Height="Auto"
+                                Kind="InformationOutline" />
+                        </Button>
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Text="About" />
                     </StackPanel>
                 </StackPanel>
             </DockPanel>

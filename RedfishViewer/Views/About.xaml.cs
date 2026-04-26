@@ -1,4 +1,4 @@
-// Copyright (c) 2023- Tabito's Works
+// Copyright (c) 2023-2026 Tabito's Works
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System.Windows.Controls;
@@ -6,11 +6,11 @@ using System.Windows.Controls;
 namespace RedfishViewer.Views
 {
     /// <summary>
-    /// Interaction logic for Reqests
+    /// Interaction logic for About
     /// </summary>
-    public partial class Reqests : UserControl
+    public partial class About : UserControl
     {
-        public Reqests()
+        public About()
         {
             InitializeComponent();
         }

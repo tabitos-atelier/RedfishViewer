@@ -1,4 +1,4 @@
-// Copyright (c) 2023- Tabito's Works
+// Copyright (c) 2023-2026 Tabito's Works
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using NLog;
@@ -41,7 +41,7 @@ namespace RedfishViewer.ViewModels
             _logger.Trace($"{this.GetType().Name}.");
 
             unityContainer.Resolve<IRegionManager>()
-                .RegisterViewWithRegion("ContentRegion", typeof(Views.Reqests));
+                .RegisterViewWithRegion("ContentRegion", typeof(Views.Requests));
 
             _redfishAdapter = unityContainer.Resolve<IRedfishAdapter>();
             _dbAgent = unityContainer.Resolve<IDatabaseAgent>();
