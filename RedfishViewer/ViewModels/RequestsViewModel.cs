@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json;
+// Copyright (c) 2023-2026 Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using System.Text.Json;
 using NLog;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation;
-using Prism.Regions;
-using Prism.Services.Dialogs;
+using Prism.Navigation.Regions;
+using Prism.Dialogs;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using RedfishViewer.Events;
@@ -17,7 +20,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Unity;
@@ -27,7 +29,7 @@ namespace RedfishViewer.ViewModels
     /// <summary>
     /// HTTPリクエスト VM
     /// </summary>
-    public class ReqestsViewModel : BindableBase, IDestructible
+    public class RequestsViewModel : BindableBase, IDestructible
     {
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly AssemblyName _asm = Assembly.GetExecutingAssembly().GetName();
@@ -73,10 +75,10 @@ namespace RedfishViewer.ViewModels
         public AsyncReactiveCommand<RoutedEventArgs> LoadedCommand { get; }             // View表示後
 
         /// <summary>
-        /// ReqestsViewModel
+        /// RequestsViewModel
         /// </summary>
         /// <param name="unityContainer"></param>
-        public ReqestsViewModel(IUnityContainer unityContainer)
+        public RequestsViewModel(IUnityContainer unityContainer)
         {
             _logger.Trace($"{this.GetType().Name}.");
 
@@ -193,7 +195,7 @@ namespace RedfishViewer.ViewModels
                 .AddTo(_disposables);
 
             // 終了処理時に保存する設定情報を渡す
-            _redfishAdapter.GetSettings = CreateSttings;
+            _redfishAdapter.GetSettings = CreateSettings;
 
             // 再リクエスト時にHTTPリクエスト情報を変更する
             _eventAggregator
@@ -220,7 +222,7 @@ namespace RedfishViewer.ViewModels
                 // キーワード履歴を読み込む
                 var item = _dbAgent.GetSetting(2);
                 if (item != null && item.Json != null)
-                    Keywords.AddRange(JsonConvert.DeserializeObject<List<string>>(item.Json));
+                    Keywords.AddRange(JsonSerializer.Deserialize<List<string>>(item.Json, JsonHelper.Options) ?? []);
             }
             catch (Exception ex)
             {
@@ -373,8 +375,8 @@ namespace RedfishViewer.ViewModels
         {
             try
             {
-                var jsonObject = JsonConvert.DeserializeObject(HttpJsonBody.Value);
-                HttpJsonBody.Value = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                using var doc = JsonDocument.Parse(HttpJsonBody.Value, JsonHelper.DocumentOptions);
+                HttpJsonBody.Value = JsonSerializer.Serialize(doc.RootElement, JsonHelper.Indented);
             }
             catch
             {
@@ -386,14 +388,18 @@ namespace RedfishViewer.ViewModels
         /// 設定情報を JSON データに変換する
         /// </summary>
         /// <returns></returns>
-        private List<Setting> CreateSttings()
+        private List<Setting> CreateSettings()
         {
-            _redfishAdapter.Configure.ProxyPassword = CryptoAes.Encrypt(_redfishAdapter.Configure.ProxyPassword) ?? string.Empty;
-            return
-                [
-                    new() { Id = 1, Json = JsonConvert.SerializeObject(_redfishAdapter.Configure) },
-                    new() { Id = 2, Json = JsonConvert.SerializeObject(Keywords.ToList()) }
-                ];
+            // パスワードは平文を保持したまま、シリアライズ用に暗号化した値を一時設定する
+            var plainPassword = _redfishAdapter.Configure.ProxyPassword;
+            _redfishAdapter.Configure.ProxyPassword = CryptoAes.Encrypt(plainPassword) ?? string.Empty;
+            var settings = new List<Setting>
+            {
+                new() { Id = 1, Json = JsonSerializer.Serialize(_redfishAdapter.Configure, JsonHelper.Options) },
+                new() { Id = 2, Json = JsonSerializer.Serialize(Keywords.ToList(), JsonHelper.Options) }
+            };
+            _redfishAdapter.Configure.ProxyPassword = plainPassword;    // 元の平文パスワードに戻す
+            return settings;
         }
 
         /// <summary>
@@ -415,7 +421,7 @@ namespace RedfishViewer.ViewModels
             Password.Value = search.Password;
 
             // HTTPリクエストヘッダ
-            var etag = HttpHeaders.FirstOrDefault(x => Regex.IsMatch(x.Name.Value, "If-Match", RegexOptions.IgnoreCase));
+            var etag = HttpHeaders.FirstOrDefault(x => x.Name.Value.Equals("If-Match", StringComparison.OrdinalIgnoreCase));
             HttpHeaders.Clear();
             if (etag != null)
                 HttpHeaders.Add(etag);

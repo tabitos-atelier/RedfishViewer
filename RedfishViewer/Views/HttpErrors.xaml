@@ -11,11 +11,11 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignPaper}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     FontFamily="{materialDesign:MaterialDesignFont}"
     TextElement.FontSize="14"
     TextElement.FontWeight="Medium"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
     mc:Ignorable="d">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

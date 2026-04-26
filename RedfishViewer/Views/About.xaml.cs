@@ -6,11 +6,11 @@ using System.Windows.Controls;
 namespace RedfishViewer.Views
 {
     /// <summary>
-    /// Interaction logic for Responses
+    /// Interaction logic for About
     /// </summary>
-    public partial class Responses : UserControl
+    public partial class About : UserControl
     {
-        public Responses()
+        public About()
         {
             InitializeComponent();
         }

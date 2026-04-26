@@ -1,4 +1,7 @@
-﻿using Prism.Ioc;
+// Copyright (c) 2023-2026 Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using Prism.Ioc;
 using System.Windows;
 
 namespace RedfishViewer
@@ -15,12 +18,13 @@ namespace RedfishViewer
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<Views.Reqests, ViewModels.ReqestsViewModel>();
+            containerRegistry.RegisterForNavigation<Views.Requests, ViewModels.RequestsViewModel>();
             containerRegistry.RegisterForNavigation<Views.Responses, ViewModels.ResponsesViewModel>();
             containerRegistry.RegisterForNavigation<Views.Nodes, ViewModels.NodesViewModel>();
             containerRegistry.RegisterForNavigation<Views.HttpErrors, ViewModels.HttpErrorsViewModel>();
             containerRegistry.RegisterForNavigation<Views.Configure, ViewModels.ConfigureViewModel>();
             containerRegistry.RegisterForNavigation<Views.Tools, ViewModels.ToolsViewModel>();
+            containerRegistry.RegisterForNavigation<Views.About, ViewModels.AboutViewModel>();
             containerRegistry.RegisterDialog<Views.MessageBox, ViewModels.MessageBoxViewModel>();
             containerRegistry.RegisterSingleton<Services.IRedfishAdapter, Services.RedfishRestSharp>();
             containerRegistry.RegisterSingleton<Services.IDatabaseAgent, Services.DatabaseContext>();

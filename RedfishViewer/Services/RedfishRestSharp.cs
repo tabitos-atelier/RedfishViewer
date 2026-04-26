@@ -1,9 +1,13 @@
-﻿using MaterialDesignColors;
+// Copyright (c) 2023-2026 Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
-using Newtonsoft.Json;
+using Microsoft.Win32;
+using System.Text.Json;
 using NLog;
+using Prism.Dialogs;
 using Prism.Events;
-using Prism.Services.Dialogs;
 using RedfishViewer.Events;
 using RedfishViewer.Models;
 using RedfishViewer.Plugins;
@@ -16,8 +20,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity;
 
@@ -33,6 +38,11 @@ namespace RedfishViewer.Services
 
         private readonly IDialogService _dialogService;                     // IDialogService
         private readonly IEventAggregator _eventAggregator;                 // IEventAggregator
+
+
+        // RestClient キャッシュ（プロキシ/タイムアウト設定が変わるまで再利用）
+        private RestClient? _cachedClient;
+        private string _cachedClientKey = string.Empty;
 
         // メソッドデータ
         private readonly Dictionary<string, Method> _methods
@@ -72,11 +82,21 @@ namespace RedfishViewer.Services
                 var item = dbAgent.GetSetting(1);
                 if (item != null && item.Json != null)
                 {
-                    Configure = JsonConvert.DeserializeObject<Configure>(item.Json) ?? new Configure();
+                    Configure = JsonSerializer.Deserialize<Configure>(item.Json, JsonHelper.Options) ?? new();
                     Configure.ProxyPassword = CryptoAes.Decrypt(Configure.ProxyPassword) ?? string.Empty;
-                    SetSwatch();
+                }
+                else
+                {
+                    // DB はあるが設定未記録(初回起動) → システムテーマを反映
+                    Configure.IsDark = IsSystemDarkMode();
                 }
             }
+            else
+            {
+                // DB 未作成(初回起動) → システムテーマを反映
+                Configure.IsDark = IsSystemDarkMode();
+            }
+            SetSwatch();
 
             // 拡張プラグイン読み込み
             var plugin = new DefaultPlugin(_dialogService);
@@ -91,9 +111,46 @@ namespace RedfishViewer.Services
         void IDisposable.Dispose()
         {
             _logger.Trace("Dispose.");
+            _cachedClient?.Dispose();
+            _cachedClient = null;
             _disposables.Dispose();
             GC.SuppressFinalize(this);
         }
+
+        /// <summary>
+        /// プロキシ・タイムアウト設定が変わるまで RestClient を再利用する
+        /// </summary>
+        private RestClient GetOrCreateClient()
+        {
+            var key = $"{Configure.MaxTimeout}|{Configure.ProxyEnabled}|{Configure.ProxyUri}|{Configure.ProxyUsername}|{Configure.ProxyPassword}";
+            if (_cachedClient != null && _cachedClientKey == key)
+                return _cachedClient;
+
+            _cachedClient?.Dispose();
+            var options = new RestClientOptions()
+            {
+                Timeout = 0 < Configure.MaxTimeout ? TimeSpan.FromSeconds(Configure.MaxTimeout) : Timeout.InfiniteTimeSpan,
+                RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+            };
+            if (Configure.ProxyEnabled)
+            {
+                options.Proxy = new WebProxy(Configure.ProxyUri);
+                if (!string.IsNullOrEmpty(Configure.ProxyUsername))
+                    options.Credentials = new NetworkCredential(Configure.ProxyUsername, Configure.ProxyPassword);
+            }
+            _cachedClient = new RestClient(options);
+            _cachedClientKey = key;
+            return _cachedClient;
+        }
+
+        /// <summary>
+        /// システムのダークモード設定を取得する
+        /// AppsUseLightTheme: 0 = ダーク、1 = ライト（省略時はライト扱い）
+        /// </summary>
+        private static bool IsSystemDarkMode()
+            => Registry.GetValue(
+                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                "AppsUseLightTheme", 1) is int v && v == 0;
 
         /// <summary>
         /// 色設定
@@ -102,11 +159,16 @@ namespace RedfishViewer.Services
         {
             var palette = new PaletteHelper();
             var theme = palette.GetTheme();
-            theme.SetBaseTheme(Configure.IsDark ? Theme.Dark : Theme.Light);                    // ライト or ダークモード
+            theme.SetBaseTheme(Configure.IsDark ? BaseTheme.Dark : BaseTheme.Light);            // ライト or ダークモード
             theme.SetPrimaryColor(Swatches[Configure.PrimaryColor].PrimaryHues[5].Color);       // プライマリ色
             theme.SetSecondaryColor(Swatches[Configure.SecondaryColor].PrimaryHues[5].Color);   // セカンダリ色
-            if (Configure.IsColorAdjustment)
-                theme.AdjustColors();                                                           // 色調整
+            theme.ColorAdjustment = !Configure.IsColorAdjustment ? null :
+                new ColorAdjustment
+                {
+                    DesiredContrastRatio = 4.5f,    // コントラスト比
+                    Contrast = Contrast.Medium,     // コントラスト
+                    Colors = ColorSelection.All     // 対象範囲
+                };
             palette.SetTheme(theme);
         }
 
@@ -159,7 +221,7 @@ namespace RedfishViewer.Services
         {
             try
             {
-                JsonConvert.DeserializeObject(jsonText);    // 成功すれば JSON 文字列
+                using var _ = JsonDocument.Parse(jsonText, JsonHelper.DocumentOptions);
                 return true;
             }
             catch
@@ -205,24 +267,12 @@ namespace RedfishViewer.Services
                 if (0 < search.JsonBody?.Length)
                     request.AddJsonBody(search.JsonBody);               // JsonBody
 
-                // クライアント設定
-                var options = new RestClientOptions()
-                {
-                    MaxTimeout = 0 < Configure.MaxTimeout ? Configure.MaxTimeout * 1000 : -1,
-                    RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
-                    Authenticator = new HttpBasicAuthenticator(search.Username, search.Password),
-                };
+                // Basic 認証ヘッダをリクエストに付与する（クライアントはキャッシュするため per-request で設定）
+                if (!string.IsNullOrEmpty(search.Username))
+                    request.AddHeader("Authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes($"{search.Username}:{search.Password}")));
 
-                // プロキシ設定
-                if (Configure.ProxyEnabled)
-                {
-                    options.Proxy = new WebProxy(Configure.ProxyUri);
-                    if (!string.IsNullOrEmpty(Configure.ProxyUsername))
-                        options.Credentials = new NetworkCredential(Configure.ProxyUsername, Configure.ProxyPassword);
-                }
-
-                // リクエスト実行
-                var client = new RestClient(options);
+                // リクエスト実行（RestClient はプロキシ/タイムアウト設定が変わるまで再利用）
+                var client = GetOrCreateClient();
                 response = await client.ExecuteAsync(request) ?? throw new Exception("HTTPリクエストに失敗しました。");
                 _logger.Info($"Http Status Code: {(int)response.StatusCode}, {response.StatusCode}");
                 if (!string.IsNullOrEmpty(response.Content))
@@ -236,9 +286,11 @@ namespace RedfishViewer.Services
                     .ToList()
                     .ForEach(x => headers.Add(new KeyValue(x.Name, x.Value as string ?? string.Empty)));
 
-                // ヘッダが JSON 以外の場合、JSONかを検証する
+                // Content-Type ヘッダまたはボディ内容で JSON 判定する
                 content = response.Content ?? string.Empty;
-                isJsonText = (headers.FirstOrDefault(x => x.Key.Equals("application/json")) != null) || IsJsonText(content);    // 成功すれば JSON 文字列
+                isJsonText = headers.Any(x => x.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase)
+                                           && x.Value.Contains("application/json", StringComparison.OrdinalIgnoreCase))
+                             || IsJsonText(content);
 
                 // HTTP レスポンス エラー判定
                 if (response.ErrorException != null)
@@ -254,11 +306,11 @@ namespace RedfishViewer.Services
                     {
                         Uri = uri.AbsoluteUri,
                         Method = request.Method.ToString(),
-                        InHeaders = JsonConvert.SerializeObject(search.Headers),
-                        Parameters = JsonConvert.SerializeObject(search.Parameters),
+                        InHeaders = JsonSerializer.Serialize(search.Headers, JsonHelper.Options),
+                        Parameters = JsonSerializer.Serialize(search.Parameters, JsonHelper.Options),
                         JsonBody = search.JsonBody,
                         StatusCode = (int)response.StatusCode,
-                        OutHeaders = JsonConvert.SerializeObject(headers),
+                        OutHeaders = JsonSerializer.Serialize(headers, JsonHelper.Options),
                         IsJsonText = isJsonText,
                         Updated = DateTime.Now,
                         Content = content,
@@ -286,7 +338,7 @@ namespace RedfishViewer.Services
                         HttpStatusCode.NotFound => "ページが見つかりません。",
                         HttpStatusCode.MethodNotAllowed => "メソッドが許可されていません。",
                         HttpStatusCode.ProxyAuthenticationRequired => "プロキシサーバの認証情報が不足しています。",
-                        HttpStatusCode.RequestTimeout => "プロキシサーバの認証情報が不足しています。",
+                        HttpStatusCode.RequestTimeout => "リクエストがタイムアウトしました。",
                         _ => "アクセスに失敗しました。",
                     };
                     _logger.Error(response.ErrorException, $"{statusCode}:{errMsg}");
@@ -301,10 +353,10 @@ namespace RedfishViewer.Services
                     Method = search.Method,
                     ProxyEnabled = Configure.ProxyEnabled,
                     Uri = uri.AbsoluteUri,
-                    InHeaders = JsonConvert.SerializeObject(search.Headers),
-                    Parameters = JsonConvert.SerializeObject(search.Parameters),
+                    InHeaders = JsonSerializer.Serialize(search.Headers, JsonHelper.Options),
+                    Parameters = JsonSerializer.Serialize(search.Parameters, JsonHelper.Options),
                     JsonBody = search.JsonBody,
-                    OutHeaders = JsonConvert.SerializeObject(headers),
+                    OutHeaders = JsonSerializer.Serialize(headers, JsonHelper.Options),
                     IsJsonText = isJsonText,
                     Content = content,
                 };
@@ -330,52 +382,50 @@ namespace RedfishViewer.Services
         /// <returns></returns>
         public ObservableCollection<string> GetOdataIds(Result result)
         {
-            var jsonTags = new HashSet<JsonToken>() { JsonToken.StartObject, JsonToken.EndObject, JsonToken.StartArray, JsonToken.EndArray };
             var list = new ObservableCollection<string>();
-            string? tag = null;
             try
             {
-                // '@odata.id' のURIを格納する
-                var uri1 = new Uri(result.Uri);
-                var reader = new JsonTextReader(new StringReader(result.Content ?? ""));
-                while (reader.Read())
-                {
-                    // プロパティ以外
-                    if (reader.TokenType != JsonToken.PropertyName)
-                        continue;
-
-                    // "@odata.id" or "href" 以外
-                    var value = reader.Value;
-                    if (value == null)
-                        continue;
-                    tag = (string)value;
-                    if (!(tag.Equals("@odata.id") || tag.Equals("href")))
-                        continue;
-
-                    // プロパティの値を読み込む
-                    reader.Read();
-
-                    // {} or [] 出現
-                    value = reader.Value;
-                    if (value == null || jsonTags.Contains(reader.TokenType))
-                        continue;
-
-                    // 同じURIは格納しない
-                    var uri2 = new Uri($"{uri1.Scheme}://{uri1.Authority}{value}".TrimEnd('/'));
-                    if (uri1.AbsoluteUri == uri2.AbsoluteUri)
-                        continue;                       // 自分自身は格納しない
-
-                    // 自動HTTPリクエスト用キューに追加する
-                    list.Add(uri2.AbsoluteUri);
-                }
+                var baseUri = new Uri(result.Uri);
+                using var doc = JsonDocument.Parse(result.Content ?? "{}", JsonHelper.DocumentOptions);
+                CollectOdataIds(doc.RootElement, baseUri, list);
             }
             catch (Exception ex)
             {
-                tag ??= "'@odata.id' or 'href'";
-                _logger.Error(ex, $"{tag} の解析に失敗しました。({result.Uri})");
+                _logger.Error(ex, $"@odata.id / href の解析に失敗しました。({result.Uri})");
                 _logger.Error(result.Content);
             }
             return list;
+        }
+
+        private static void CollectOdataIds(JsonElement element, Uri baseUri, ObservableCollection<string> list)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (var prop in element.EnumerateObject())
+                    {
+                        if ((prop.Name == "@odata.id" || prop.Name == "href") &&
+                            prop.Value.ValueKind == JsonValueKind.String)
+                        {
+                            var raw = prop.Value.GetString();
+                            if (raw != null)
+                            {
+                                var uri2 = new Uri($"{baseUri.Scheme}://{baseUri.Authority}{raw}".TrimEnd('/'));
+                                if (baseUri.AbsoluteUri != uri2.AbsoluteUri)
+                                    list.Add(uri2.AbsoluteUri);
+                            }
+                        }
+                        else
+                        {
+                            CollectOdataIds(prop.Value, baseUri, list);
+                        }
+                    }
+                    break;
+                case JsonValueKind.Array:
+                    foreach (var item in element.EnumerateArray())
+                        CollectOdataIds(item, baseUri, list);
+                    break;
+            }
         }
 
         /// <summary>
@@ -388,33 +438,42 @@ namespace RedfishViewer.Services
             if (string.IsNullOrEmpty(content))
                 return string.Empty;
 
-            var jsonTags = new HashSet<JsonToken>() { JsonToken.StartObject, JsonToken.EndObject, JsonToken.StartArray, JsonToken.EndArray };
             try
             {
-                // '@odata.id' のURIを格納する
-                var reader = new JsonTextReader(new StringReader(content));
-                while (reader.Read())
-                {
-                    var value = reader.Value;
-                    if (reader.TokenType != JsonToken.PropertyName)
-                        continue;                   // プロパティ以外
-                    if (value == null || !((string)value).Equals("@odata.etag"))
-                        continue;                   // @odata.etag 以外
-
-                    // プロパティの値を読み込む
-                    reader.Read();
-                    value = reader.Value;
-                    if (value == null || jsonTags.Contains(reader.TokenType))
-                        continue;                   // {} or [] 出現
-                    return (string)value;
-                }
+                using var doc = JsonDocument.Parse(content, JsonHelper.DocumentOptions);
+                return FindOdataEtag(doc.RootElement) ?? string.Empty;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"@odata.etag の解析に失敗しました。");
+                _logger.Error(ex, "@odata.etag の解析に失敗しました。");
                 _logger.Error(content);
             }
             return string.Empty;
+        }
+
+        private static string? FindOdataEtag(JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in element.EnumerateObject())
+                {
+                    if (prop.Name == "@odata.etag" && prop.Value.ValueKind == JsonValueKind.String)
+                        return prop.Value.GetString();
+                    var found = FindOdataEtag(prop.Value);
+                    if (found != null)
+                        return found;
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    var found = FindOdataEtag(item);
+                    if (found != null)
+                        return found;
+                }
+            }
+            return null;
         }
     }
 }

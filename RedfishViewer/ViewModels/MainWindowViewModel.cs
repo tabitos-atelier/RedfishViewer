@@ -1,8 +1,11 @@
-﻿using NLog;
+// Copyright (c) 2023-2026 Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using NLog;
 using Prism.Ioc;
 using Prism.Mvvm;
 using Prism.Navigation;
-using Prism.Regions;
+using Prism.Navigation.Regions;
 using Reactive.Bindings;
 using Reactive.Bindings.Disposables;
 using Reactive.Bindings.Extensions;
@@ -38,13 +41,13 @@ namespace RedfishViewer.ViewModels
             _logger.Trace($"{this.GetType().Name}.");
 
             unityContainer.Resolve<IRegionManager>()
-                .RegisterViewWithRegion("ContentRegion", typeof(Views.Reqests));
+                .RegisterViewWithRegion("ContentRegion", typeof(Views.Requests));
 
-            _redfishAdapter = unityContainer.Resolve< IRedfishAdapter>();
+            _redfishAdapter = unityContainer.Resolve<IRedfishAdapter>();
             _dbAgent = unityContainer.Resolve<IDatabaseAgent>();
 
             // タイトル
-            Title = new ReactivePropertySlim<string>("Redfish Viwer")
+            Title = new ReactivePropertySlim<string>("Redfish Viewer")
                 .AddTo(_disposables);
 
             // アプリケーション終了

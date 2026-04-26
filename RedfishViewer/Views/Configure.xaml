@@ -10,11 +10,11 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignPaper}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     FontFamily="{materialDesign:MaterialDesignFont}"
     TextElement.FontSize="14"
     TextElement.FontWeight="Medium"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
     mc:Ignorable="d">
     <ScrollViewer>
         <StackPanel>
@@ -27,45 +27,45 @@
                     <StackPanel Margin="0,8" Orientation="Horizontal">
                         <TextBlock
                             Width="120"
-                            Margin="4,0"
+                            Margin="4,4,4,0"
                             Text="ダークモード" />
                         <ToggleButton
                             Margin="4,0"
                             IsChecked="{Binding IsDark.Value}"
-                            Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}"
                             ToolTip="背景色をライトとダークに切り替えます" />
                     </StackPanel>
                     <StackPanel Margin="0,8" Orientation="Horizontal">
                         <TextBlock
                             Width="120"
-                            Margin="4,0,4,0"
+                            Margin="4,4,4,0"
                             Text="色の調整" />
                         <ToggleButton
                             Margin="4,0"
                             IsChecked="{Binding IsColorAdjustment.Value}"
-                            Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}"
                             ToolTip="目に負担の少ない配色に調整します" />
                     </StackPanel>
                     <StackPanel Margin="0,8" Orientation="Horizontal">
                         <TextBlock
                             Width="120"
-                            Margin="4,0"
+                            Margin="4,8,4,0"
                             VerticalAlignment="Center"
                             Text="プライマリ色" />
                         <ComboBox
-                            Width="120"
+                            Width="150"
                             Margin="4,0"
+                            materialDesign:HintAssist.Hint="Primary color"
                             ItemsSource="{Binding PrimaryColors}"
                             SelectedItem="{Binding PrimaryColor.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            Style="{StaticResource MaterialDesignComboBox}"
+                            Style="{StaticResource MaterialDesignFilledComboBox}"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.ScrollUnit="Pixel"
                             VirtualizingPanel.VirtualizationMode="Recycling" />
                         <materialDesign:Card
                             Width="200"
                             Margin="16,0"
-                            Background="{DynamicResource PrimaryHueMidBrush}"
-                            Foreground="{DynamicResource SecondaryHueMidForegroundBrush}">
+                            Background="{DynamicResource MaterialDesign.Brush.Primary}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -76,25 +76,26 @@
                     <StackPanel Margin="0,8" Orientation="Horizontal">
                         <TextBlock
                             Width="120"
-                            Margin="4,0"
+                            Margin="4,8,4,0"
                             VerticalAlignment="Center"
                             Text="セカンダリ色" />
                         <ComboBox
                             x:Name="secondaryColor"
-                            Width="120"
+                            Width="150"
                             Margin="4,0"
-                            materialDesign:TextFieldAssist.UnderlineBrush="{DynamicResource SecondaryHueMidBrush}"
+                            materialDesign:HintAssist.Foreground="{DynamicResource MaterialDesign.Brush.Secondary}"
+                            materialDesign:HintAssist.Hint="Secondary color"
+                            materialDesign:TextFieldAssist.UnderlineBrush="{DynamicResource MaterialDesign.Brush.Secondary}"
                             ItemsSource="{Binding SecondaryColors}"
                             SelectedItem="{Binding SecondaryColor.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            Style="{StaticResource MaterialDesignComboBox}"
+                            Style="{StaticResource MaterialDesignFilledComboBox}"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.ScrollUnit="Pixel"
                             VirtualizingPanel.VirtualizationMode="Recycling" />
                         <materialDesign:Card
                             Width="200"
                             Margin="16,0"
-                            Background="{DynamicResource SecondaryHueMidBrush}"
-                            Foreground="{DynamicResource SecondaryHueMidForegroundBrush}">
+                            Background="{DynamicResource MaterialDesign.Brush.Secondary}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -137,7 +138,7 @@
                         <ToggleButton
                             Margin="4,0"
                             IsChecked="{Binding ProxyEnabled.Value}"
-                            Style="{StaticResource MaterialDesignSwitchSecondaryToggleButton}"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}"
                             ToolTip="プロキシの有効・無効を設定します" />
                     </StackPanel>
                     <StackPanel Margin="0,8" Orientation="Horizontal">

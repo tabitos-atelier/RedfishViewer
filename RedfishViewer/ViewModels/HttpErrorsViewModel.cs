@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+// Copyright (c) 2023-2026 Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using System.Text.Json;
 using NLog;
 using Prism.Events;
 using Prism.Mvvm;
@@ -136,7 +139,7 @@ namespace RedfishViewer.ViewModels
 
             // HTTPレスポンスヘッダー
             OutHeaders.Clear();
-            JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.OutHeaders.Value)?
+            JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.OutHeaders.Value, JsonHelper.Options)?
                 .ToList()
                 .ForEach(x => OutHeaders.Add(new KeyValueViewModel(new KeyValue(x.Key, x.Value))));
 
@@ -146,7 +149,8 @@ namespace RedfishViewer.ViewModels
             {
                 try
                 {
-                    content = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(content), Formatting.Indented);
+                    using var cd = JsonDocument.Parse(content, JsonHelper.DocumentOptions);
+                    content = JsonSerializer.Serialize(cd.RootElement, JsonHelper.Indented);
                 }
                 catch
                 {
@@ -157,14 +161,14 @@ namespace RedfishViewer.ViewModels
             // HTTPリクエストヘッダー
             InHeaders.Clear();
             if (!string.IsNullOrEmpty(item.InHeaders.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.InHeaders.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.InHeaders.Value, JsonHelper.Options)?
                     .ToList()
                     .ForEach(x => InHeaders.Add(new KeyValueViewModel(new KeyValue(x.Key, x.Value))));
 
             // HTTPリクエストパラメータ
             InParameters.Clear();
             if (!string.IsNullOrEmpty(item.Parameters.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.Parameters.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.Parameters.Value, JsonHelper.Options)?
                     .ToList()
                     .ForEach(x => InParameters.Add(new KeyValueViewModel(new KeyValue(x.Key, x.Value))));
 
@@ -174,7 +178,8 @@ namespace RedfishViewer.ViewModels
             {
                 try
                 {
-                    jsonBody = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(jsonBody), Formatting.Indented);
+                    using var jd = JsonDocument.Parse(jsonBody, JsonHelper.DocumentOptions);
+                    jsonBody = JsonSerializer.Serialize(jd.RootElement, JsonHelper.Indented);
                 }
                 catch
                 {
@@ -217,7 +222,7 @@ namespace RedfishViewer.ViewModels
 
             // ヘッダ
             if (!string.IsNullOrEmpty(item.InHeaders.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.InHeaders.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.InHeaders.Value, JsonHelper.Options)?
                 .ToList()
                 .ForEach(x =>
                 {
@@ -227,7 +232,7 @@ namespace RedfishViewer.ViewModels
 
             // パラメータ
             if (!string.IsNullOrEmpty(item.Parameters.Value))
-                JsonConvert.DeserializeObject<ObservableCollection<KeyValue>>(item.Parameters.Value)?
+                JsonSerializer.Deserialize<ObservableCollection<KeyValue>>(item.Parameters.Value, JsonHelper.Options)?
                 .ToList()
                 .ForEach(x => search.Parameters.Add(x));
 

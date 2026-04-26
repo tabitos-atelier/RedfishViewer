@@ -1,4 +1,7 @@
-﻿using MaterialDesignThemes.Wpf;
+// Copyright (c) 2023-2026 Tabito's Works
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using MaterialDesignThemes.Wpf;
 using NLog;
 using Prism.Mvvm;
 using Prism.Navigation;
@@ -158,7 +161,7 @@ namespace RedfishViewer.ViewModels
         private void SetDarkOrLight(bool isDark)
         {
             // ライト・ダークを切り替える
-            var mode = isDark ? Theme.Dark : Theme.Light;
+            var mode = isDark ? BaseTheme.Dark : BaseTheme.Light;
             var palette = new PaletteHelper();
             var theme = palette.GetTheme();
             theme.SetBaseTheme(mode);                   // ライト or ダークモード
@@ -182,10 +185,15 @@ namespace RedfishViewer.ViewModels
             var color2 = _redfishAdapter.Swatches[SecondaryColor.Value].PrimaryHues[5].Color;
             var palette = new PaletteHelper();
             var theme = palette.GetTheme();
-            theme.SetPrimaryColor(color1);              // プライマリ色
-            theme.SetSecondaryColor(color2);            // セカンダリ色
-            if (isColorAdjustment)
-                theme.AdjustColors();                   // 色調整
+            theme.SetPrimaryColor(color1);          // プライマリ色
+            theme.SetSecondaryColor(color2);        // セカンダリ色
+            theme.ColorAdjustment = !isColorAdjustment ? null :
+                new ColorAdjustment
+                {
+                    DesiredContrastRatio = 4.5f,    // コントラスト比
+                    Contrast = Contrast.Medium,     // コントラスト
+                    Colors = ColorSelection.All     // 対象範囲
+                };
             palette.SetTheme(theme);
 
             // 色情報を保持する
