@@ -1,7 +1,7 @@
 # RedfishViewer
 
 <p align="center">
-  <img src="https://github.com/tabitos-atelier/RedfishViewer/raw/images/RedfishViewer.png" alt="RedfishViewer" width="96" />
+  <img src="https://github.com/tabitos-atelier/redfish-viewer/raw/images/RedfishViewer.png" alt="RedfishViewer" width="96" />
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
 ---
 
 <p align="center">
-  <img src="https://github.com/tabitos-atelier/RedfishViewer/raw/images/demo-redfish-viewer.gif" alt="RedfishViewer Demo" width="800" />
+  <img src="https://github.com/tabitos-atelier/redfish-viewer/raw/images/demo-redfish-viewer.gif" alt="RedfishViewer Demo" width="800" />
 </p>
 
 ---
@@ -66,7 +66,7 @@
 
 ## インストール (Installation)
 
-1.  **[Releaseページ](https://github.com/tabitos-atelier/RedfishViewer/releases)** から、最新版のインストーラ (`RedfishViewer_Setup.exe`) をダウンロードします。
+1.  **[Releaseページ](https://github.com/tabitos-atelier/redfish-viewer/releases)** から、最新版のインストーラ (`RedfishViewer_Setup.exe`) をダウンロードします。
 2.  ファイルを実行してください。
 
 ## 使い方 (Usage)

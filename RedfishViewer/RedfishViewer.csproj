@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <Title>$(AssemblyName)</Title>
     <Description>Redfish サーバー管理 API のツリー構造をグラフィカルに探索・表示する WPF デスクトップアプリケーション</Description>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>2.0.1</AssemblyVersion>
+    <FileVersion>2.0.1</FileVersion>
     <BaseOutputPath></BaseOutputPath>
     <Authors>Tabito's Works</Authors>
     <Copyright>© 2023-2026 Tabito's Works</Copyright>
