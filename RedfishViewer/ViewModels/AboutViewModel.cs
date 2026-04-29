@@ -34,7 +34,7 @@ namespace RedfishViewer.ViewModels
             _logger.Trace($"{this.GetType().Name}.");
 
             OpenGitHubCommand = new ReactiveCommand()
-                .WithSubscribe(() => OpenUrl("https://github.com/tabitos-atelier/RedfishViewer"))
+                .WithSubscribe(() => OpenUrl("https://github.com/tabitos-atelier/redfish-viewer"))
                 .AddTo(_disposables);
             OpenBlogCommand = new ReactiveCommand()
                 .WithSubscribe(() => OpenUrl("https://tabitos-voyage.com/"))

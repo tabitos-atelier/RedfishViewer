@@ -1,9 +1,9 @@
 ; Script generated for Tabito's Works RedfishViewer
 
 #define MyAppName "RedfishViewer"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppPublisher "Tabito's Works"
-#define MyAppURL "https://github.com/tabitos-atelier/RedfishViewer"
+#define MyAppURL "https://github.com/tabitos-atelier/redfish-viewer"
 #define MyAppBlogURL "https://tabitos-voyage.com/"
 #define MyAppExeName "RedfishViewer.exe"
 
@@ -32,7 +32,6 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardImageFile=Images\SideImage.bmp
 WizardSmallImageFile=Images\SmallImage.bmp
 WizardImageStretch=yes
-WindowResizable=no
 
 ; --- コンパイル出力設定 ---
 OutputBaseFilename=RedfishViewer_Setup
@@ -53,7 +52,7 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "RedfishViewer\bin\Release\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "RedfishViewer\bin\Release\publish\win-x64\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
